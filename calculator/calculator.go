@@ -1,9 +1,11 @@
 package calculator
 
-// MA 计算简单移动平均线
-// prices: 收盘价数组，period: 周期（比如 5、10、20）
+// MA 简单移动平均线
 func MA(prices []float64, period int) []float64 {
 	result := make([]float64, len(prices))
+	if len(prices) < period {
+		return result
+	}
 	for i := period - 1; i < len(prices); i++ {
 		sum := 0.0
 		for j := i - (period - 1); j <= i; j++ {
@@ -14,20 +16,32 @@ func MA(prices []float64, period int) []float64 {
 	return result
 }
 
-// EMA 计算指数移动平均线（RSI 和 MACD 的基础）
+// EMA 指数移动平均线（用 SMA 做种子，修复偏差问题）
 func EMA(prices []float64, period int) []float64 {
 	result := make([]float64, len(prices))
+	if len(prices) < period {
+		return result
+	}
+	// 用前 period 个价格的 SMA 作为第一个 EMA（标准做法）
+	sum := 0.0
+	for i := 0; i < period; i++ {
+		sum += prices[i]
+	}
+	result[period-1] = sum / float64(period)
+
 	k := 2.0 / float64(period+1)
-	result[period-1] = prices[period-1]
 	for i := period; i < len(prices); i++ {
 		result[i] = prices[i]*k + result[i-1]*(1-k)
 	}
 	return result
 }
 
-// RSI 计算相对强弱指数
+// RSI 相对强弱指数
 func RSI(prices []float64, period int) []float64 {
 	result := make([]float64, len(prices))
+	if len(prices) < period+1 {
+		return result
+	}
 	for i := period; i < len(prices); i++ {
 		gains, losses := 0.0, 0.0
 		for j := i - period + 1; j <= i; j++ {
@@ -50,16 +64,24 @@ func RSI(prices []float64, period int) []float64 {
 	return result
 }
 
-// MACDResult 存储 MACD 的三条线
+// MACDResult 存储 MACD 三条线
 type MACDResult struct {
-	DIF  []float64 `json:"dif"`  // 快线 - 慢线
-	DEA  []float64 `json:"dea"`  // DIF 的 EMA（信号线）
-	MACD []float64 `json:"macd"` // 柱状图 = DIF - DEA
+	DIF  []float64 `json:"dif"`
+	DEA  []float64 `json:"dea"`
+	MACD []float64 `json:"macd"`
 }
 
-// MACD 计算 MACD 指标
-// 标准参数：fast=12, slow=26, signal=9
+// MACD 计算 MACD 指标，修复 DEA 零值段偏移问题
 func MACD(prices []float64, fast, slow, signal int) MACDResult {
+	empty := MACDResult{
+		DIF:  make([]float64, len(prices)),
+		DEA:  make([]float64, len(prices)),
+		MACD: make([]float64, len(prices)),
+	}
+	if len(prices) < slow+signal {
+		return empty
+	}
+
 	emaFast := EMA(prices, fast)
 	emaSlow := EMA(prices, slow)
 
@@ -68,7 +90,11 @@ func MACD(prices []float64, fast, slow, signal int) MACDResult {
 		dif[i] = emaFast[i] - emaSlow[i]
 	}
 
-	dea := EMA(dif, signal)
+	// 只对有效段（slow-1 之后）做 EMA，避免零值段拉偏 DEA
+	validDif := dif[slow-1:]
+	validDea := EMA(validDif, signal)
+	dea := make([]float64, len(prices))
+	copy(dea[slow-1:], validDea)
 
 	macd := make([]float64, len(prices))
 	for i := range prices {
