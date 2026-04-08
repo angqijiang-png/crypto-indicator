@@ -380,10 +380,15 @@ function renderAll(d){
   const sub=Math.min(n,80);
   const labels=klines.slice(-sub).map(k=>fmtLabel(k.open_time,iv));
 
-  // RSI - destroy old first
+  // RSI - replace canvas to avoid Chart.js residual pixels
   if(rsiChart){rsiChart.destroy();rsiChart=null;}
   const rsiData=d.rsi14.slice(-sub).map(v=>v>0?+v.toFixed(2):null);
-  const rsiCanvas=document.getElementById('rsi-canvas');
+  let rsiCanvas=document.getElementById('rsi-canvas');
+  const rsiParent=rsiCanvas.parentNode;
+  rsiParent.removeChild(rsiCanvas);
+  rsiCanvas=document.createElement('canvas');
+  rsiCanvas.id='rsi-canvas';
+  rsiParent.appendChild(rsiCanvas);
   rsiChart=new Chart(rsiCanvas.getContext('2d'),{
     type:'line',
     data:{labels,datasets:[
@@ -400,12 +405,18 @@ function renderAll(d){
     }
   });
 
-  // MACD - destroy old first
+  // MACD - replace canvas
   if(macdChart){macdChart.destroy();macdChart=null;}
   const difData=d.macd.dif.slice(-sub).map(v=>+v.toFixed(4));
   const deaData=d.macd.dea.slice(-sub).map(v=>+v.toFixed(4));
   const histData=d.macd.macd.slice(-sub).map(v=>+v.toFixed(4));
-  macdChart=new Chart(document.getElementById('macd-canvas').getContext('2d'),{
+  let macdCanvas=document.getElementById('macd-canvas');
+  const macdParent=macdCanvas.parentNode;
+  macdParent.removeChild(macdCanvas);
+  macdCanvas=document.createElement('canvas');
+  macdCanvas.id='macd-canvas';
+  macdParent.appendChild(macdCanvas);
+  macdChart=new Chart(macdCanvas.getContext('2d'),{
     data:{labels,datasets:[
       {type:'bar',label:'HIST',data:histData,backgroundColor:histData.map(v=>v>=0?'#00ff8880':'#ff446680'),borderColor:histData.map(v=>v>=0?'#00ff88':'#ff4466'),borderWidth:1,order:2},
       {type:'line',label:'DIF',data:difData,borderColor:'#ffaa00',borderWidth:1.5,pointRadius:0,tension:.2,fill:false,order:1},
