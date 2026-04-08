@@ -1,45 +1,98 @@
 # crypto-indicator
 
-A backend service written in Go that fetches real-time K-line data from Binance
-and calculates technical indicators (MA, RSI, MACD).
+> Real-time cryptocurrency technical analysis engine built with Go + Binance API
+
+![Go](https://img.shields.io/badge/Go-1.21-00ADD8?style=flat&logo=go)
+![Binance](https://img.shields.io/badge/Data-Binance%20API-F0B90B?style=flat)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+
+## Overview
+
+A lightweight backend service that fetches live K-line data from Binance and computes key technical indicators in real time. Comes with a Bloomberg Terminal-style web dashboard for visualization.
+
+**Live indicators:** MA · EMA · RSI · MACD
+
+---
 
 ## Features
 
-- Fetches K-line data from Binance public API (no API key required)
-- Calculates MA (5, 20), RSI (14), and MACD (12, 26, 9)
-- RESTful JSON API built with Go standard library
+- Fetches real-time OHLCV data from Binance REST API
+- Calculates MA(5/20), RSI(14), MACD(12,26,9) from scratch in pure Go
+- RESTful JSON API with CORS support
+- Bloomberg Terminal-style dark dashboard (candlestick + indicator charts)
+- Composite signal scoring: aggregates all indicators into a single BULL/BEAR/NEUTRAL signal
+- Zero external Go dependencies — standard library only
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Go 1.21, `net/http` |
+| Data Source | Binance REST API (`/api/v3/klines`) |
+| Charts | Lightweight Charts (TradingView), Chart.js |
+| Frontend | Vanilla HTML/CSS/JS |
+
+---
+
+## Project Structure
+
+```
+crypto-indicator/
+├── main.go                 # HTTP server, routing, middleware
+├── calculator/
+│   └── calculator.go       # MA, EMA, RSI, MACD algorithms
+├── fetcher/
+│   └── fetcher.go          # Binance API client
+├── model/
+│   └── kline.go            # Kline data structure
+├── static/
+│   └── index.html          # Web dashboard
+└── go.mod
+```
+
+---
+
+## API
+
+| Endpoint | Description |
+|---|---|
+| `GET /ping` | Health check |
+| `GET /api/kline?symbol=BTCUSDT&interval=1d&limit=200` | Raw K-line data |
+| `GET /api/indicator?symbol=BTCUSDT&interval=1d&limit=200` | K-lines + all indicators |
+
+**Supported symbols:** BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT, DOGEUSDT, ADAUSDT, AVAXUSDT
+
+**Supported intervals:** `1h` `4h` `1d` `1w`
+
+---
 
 ## Quick Start
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/crypto-indicator.git
+git clone https://github.com/angqijiang-png/crypto-indicator.git
 cd crypto-indicator
 go run main.go
 ```
 
-## API Endpoints
+Open `http://localhost:8080` in your browser.
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /ping` | Health check |
-| `GET /api/kline?symbol=BTCUSDT&interval=1d` | Raw K-line data |
-| `GET /api/indicator?symbol=BTCUSDT&interval=1d` | MA / RSI / MACD |
+---
 
-**Supported intervals:** `1m` `5m` `15m` `1h` `4h` `1d`
+## Dashboard
 
-## Project Structure
-```
-crypto-indicator/
-├── main.go              # HTTP server & routing
-├── fetcher/
-│   └── binance.go       # Binance API client
-├── calculator/
-│   └── indicator.go     # MA, EMA, RSI, MACD logic
-└── model/
-    └── kline.go         # Data structures
-```
+- Candlestick chart with MA5 / MA20 overlay
+- RSI(14) panel with overbought / oversold zones
+- MACD(12,26,9) panel with DIF / DEA / histogram
+- Real-time indicator signals (BULL / BEAR / NEUTRAL per indicator)
+- Composite signal: votes across all 6 indicators → final market signal
 
-## Tech Stack
+---
 
-- **Language:** Go 1.21+
-- **Data source:** Binance REST API
-- **Dependencies:** Go standard library only
+## Author
+
+**Angqi Jiang**
+- GitHub: [@angqijiang-png](https://github.com/angqijiang-png)
+- Telegram: [@angqi_web3](https://t.me/angqi_web3)
+- X: [@angsevenJIANG](https://x.com/angsevenJIANG)
