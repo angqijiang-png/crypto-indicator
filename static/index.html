@@ -7,7 +7,7 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
 
   :root {
     --bg:        #060810;
@@ -26,378 +26,118 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    overflow-x: hidden;
-    min-height: 100vh;
+    background: var(--bg); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    overflow-x: hidden; min-height: 100vh;
   }
 
-  /* ── Header ── */
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; border-bottom: 1px solid var(--border); background: var(--surface);
   }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
+  .logo { display: flex; align-items: center; gap: 10px; }
   .logo-mark {
-    width: 28px; height: 28px;
-    background: var(--green);
+    width: 28px; height: 28px; background: var(--green);
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     animation: pulse 2s ease-in-out infinite;
   }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+  .logo-text { font-size:14px; font-weight:600; color:var(--green); letter-spacing:2px; text-transform:uppercase; }
+  .logo-sub { font-size:10px; color:var(--text-dim); letter-spacing:1px; }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .live-dot { width:7px; height:7px; background:var(--green); border-radius:50%; animation:blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.1} }
+  .live-label { color:var(--green); font-size:10px; letter-spacing:1px; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  .logo-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--green);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .logo-sub {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .live-dot {
-    width: 7px; height: 7px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: blink 1.2s ease-in-out infinite;
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.1; }
-  }
-  .live-label { color: var(--green); font-size: 10px; letter-spacing: 1px; }
-
-  /* ── Controls ── */
   .controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
+    display:flex; align-items:center; gap:8px;
+    padding:10px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
-
-  .ctrl-label {
-    color: var(--text-dim);
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
+  .ctrl-label { color:var(--text-dim); font-size:10px; letter-spacing:1px; text-transform:uppercase; }
   select, button {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    padding: 5px 10px;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.15s, color 0.15s;
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 10px; cursor:pointer; outline:none;
+    transition: border-color .15s, color .15s;
   }
+  select:hover, select:focus { border-color:var(--green); color:var(--green); }
+  button { border-color:var(--green-dim); color:var(--green); letter-spacing:1px; padding:5px 16px; }
+  button:hover { background:var(--green); color:var(--bg); }
+  button:disabled { opacity:.4; cursor:not-allowed; background:var(--surface); color:var(--text-dim); }
+  .sep { color:var(--text-muted); padding:0 4px; }
 
-  select:hover, select:focus {
-    border-color: var(--green);
-    color: var(--green);
-  }
+  .auto-box { display:flex; align-items:center; gap:6px; margin-left:12px; font-size:10px; color:var(--text-dim); }
+  .auto-box.on { color:var(--green); }
+  .auto-box input { accent-color:var(--green); cursor:pointer; }
+  .countdown { min-width:28px; }
 
-  button {
-    border-color: var(--green-dim);
-    color: var(--green);
-    letter-spacing: 1px;
-    padding: 5px 16px;
-  }
-
-  button:hover {
-    background: var(--green);
-    color: var(--bg);
-  }
-
-  button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    background: var(--surface);
-    color: var(--text-dim);
-  }
-
-  .sep {
-    color: var(--text-muted);
-    padding: 0 4px;
-  }
-
-  /* ── Price Bar ── */
   .price-bar {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
+    display:flex; align-items:baseline; gap:16px;
+    padding:10px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
+  .price-symbol { font-size:13px; font-weight:600; letter-spacing:1px; }
+  .price-fullname { font-size:11px; color:var(--text-dim); }
+  .price-value { font-size:22px; font-weight:600; letter-spacing:-.5px; }
+  .price-change { font-size:12px; padding:2px 6px; }
+  .price-change.up { color:var(--green); }
+  .price-change.down { color:var(--red); }
+  .price-stat { font-size:10px; color:var(--text-dim); }
+  .price-stat span { color:var(--text); margin-left:4px; }
 
-  .price-symbol {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 1px;
-  }
-
-  .price-value {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--green);
-    letter-spacing: -0.5px;
-  }
-
-  .price-change {
-    font-size: 12px;
-    padding: 2px 6px;
-  }
-
-  .price-change.up   { color: var(--green); }
-  .price-change.down { color: var(--red); }
-
-  .price-stat {
-    font-size: 10px;
-    color: var(--text-dim);
-  }
-
-  .price-stat span {
-    color: var(--text);
-    margin-left: 4px;
-  }
-
-  /* ── Layout ── */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    grid-template-rows: auto;
-    gap: 0;
-    height: calc(100vh - 130px);
-  }
-
-  .charts-col {
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-    overflow: hidden;
-  }
-
-  /* ── Chart panels ── */
-  .panel {
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-
+  .layout { display:grid; grid-template-columns:1fr 280px; height:calc(100vh - 130px); }
+  .charts-col { display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden; }
+  .panel { border-bottom:1px solid var(--border); position:relative; }
   .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 14px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(13,17,23,0.8);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 14px; border-bottom:1px solid var(--border); background:rgba(13,17,23,.8);
   }
+  .panel-title { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); }
+  .legend { display:flex; gap:12px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-dim); }
+  .legend-dot { width:8px; height:2px; border-radius:1px; }
+  .chart-body { width:100%; height:calc(100% - 30px); position:relative; }
+  #main-chart-container { width:100%; height:100%; }
 
-  .panel-title {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .legend {
-    display: flex;
-    gap: 12px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: var(--text-dim);
-  }
-
-  .legend-dot {
-    width: 8px; height: 2px;
-    border-radius: 1px;
-  }
-
-  #chart-main  { flex: 0 0 52%; }
-  #chart-rsi   { flex: 0 0 24%; }
-  #chart-macd  { flex: 0 0 24%; }
-
-  .chart-body {
-    width: 100%;
-    height: calc(100% - 30px);
-    position: relative;
-  }
-
-  #main-chart-container {
-    width: 100%;
-    height: 100%;
-  }
-
-  canvas {
-    display: block;
-  }
-
-  /* RSI zone lines */
-  .rsi-zones {
-    position: absolute;
-    top: 30px; left: 0; right: 0; bottom: 0;
-    pointer-events: none;
-  }
-
-  /* ── Side Panel ── */
-  .side-panel {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding: 14px;
-    gap: 14px;
-  }
-
-  .side-section {
-    border: 1px solid var(--border);
-    padding: 12px;
-  }
-
+  .side-panel { display:flex; flex-direction:column; overflow-y:auto; padding:14px; gap:14px; }
+  .side-section { border:1px solid var(--border); padding:12px; }
   .side-title {
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim);
+    margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border);
   }
-
   .indicator-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-    border-bottom: 1px solid var(--text-muted);
+    display:flex; justify-content:space-between; align-items:center;
+    padding:4px 0; border-bottom:1px solid var(--text-muted);
   }
+  .indicator-row:last-child { border-bottom:none; }
+  .ind-name { color:var(--text-dim); font-size:10px; }
+  .ind-value { font-size:11px; font-weight:500; }
+  .ind-signal { font-size:9px; letter-spacing:1px; padding:1px 6px; border:1px solid; }
+  .signal-bull { color:var(--green); border-color:var(--green); }
+  .signal-bear { color:var(--red); border-color:var(--red); }
+  .signal-neut { color:var(--amber); border-color:var(--amber); }
+  .ohlcv-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .ohlcv-label { font-size:9px; color:var(--text-dim); }
+  .ohlcv-val { font-size:11px; }
 
-  .indicator-row:last-child {
-    border-bottom: none;
-  }
-
-  .ind-name {
-    color: var(--text-dim);
-    font-size: 10px;
-  }
-
-  .ind-value {
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .ind-signal {
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 1px 6px;
-    border: 1px solid;
-  }
-
-  .signal-bull  { color: var(--green);  border-color: var(--green); }
-  .signal-bear  { color: var(--red);    border-color: var(--red); }
-  .signal-neut  { color: var(--amber);  border-color: var(--amber); }
-
-  .ohlcv-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .ohlcv-item {}
-  .ohlcv-label { font-size: 9px; color: var(--text-dim); }
-  .ohlcv-val   { font-size: 11px; color: var(--text); }
-
-  /* ── Loading / Error ── */
   .overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    z-index: 100;
-    transition: opacity 0.4s;
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; z-index:100; transition:opacity .4s;
   }
-
-  .overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .spinner {
-    width: 40px; height: 40px;
-    border: 2px solid var(--border);
-    border-top-color: var(--green);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .overlay-text {
-    color: var(--text-dim);
-    font-size: 11px;
-    letter-spacing: 2px;
-  }
-
-  .error-box {
-    color: var(--red);
-    border: 1px solid var(--red);
-    padding: 10px 20px;
-    font-size: 11px;
-    display: none;
-  }
+  .overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner { width:40px; height:40px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .overlay-text { color:var(--text-dim); font-size:11px; letter-spacing:2px; }
+  .error-box { color:var(--red); border:1px solid var(--red); padding:10px 20px; font-size:11px; display:none; }
+  .last-update { font-size:9px; color:var(--text-dim); margin-top:8px; }
 </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="overlay" id="overlay">
   <div class="spinner"></div>
   <div class="overlay-text">FETCHING MARKET DATA...</div>
 </div>
 
-<!-- Header -->
 <header>
   <div class="logo">
     <div class="logo-mark"></div>
@@ -412,9 +152,8 @@
   </div>
 </header>
 
-<!-- Controls -->
 <div class="controls">
-  <span class="ctrl-label">SYMBOL</span>
+  <span class="ctrl-label">SYMBOL 币种</span>
   <select id="sel-symbol">
     <option value="BTCUSDT">BTC/USDT</option>
     <option value="ETHUSDT">ETH/USDT</option>
@@ -426,7 +165,7 @@
     <option value="AVAXUSDT">AVAX/USDT</option>
   </select>
   <span class="sep">/</span>
-  <span class="ctrl-label">INTERVAL</span>
+  <span class="ctrl-label">INTERVAL 周期</span>
   <select id="sel-interval">
     <option value="1h">1H</option>
     <option value="4h">4H</option>
@@ -434,537 +173,324 @@
     <option value="1w">1W</option>
   </select>
   <span class="sep">/</span>
-  <span class="ctrl-label">LIMIT</span>
+  <span class="ctrl-label">LIMIT 根数</span>
   <select id="sel-limit">
     <option value="100">100</option>
     <option value="200" selected>200</option>
     <option value="500">500</option>
   </select>
-  <button id="btn-load">▶ LOAD</button>
+  <button id="btn-load">▶ LOAD 载入</button>
+
+  <label class="auto-box" id="auto-box">
+    <input type="checkbox" id="chk-auto" checked>
+    AUTO 自动刷新
+    <span class="countdown" id="cd"></span>
+  </label>
+
   <div class="error-box" id="error-box"></div>
 </div>
 
-<!-- Price Bar -->
 <div class="price-bar">
   <div class="price-symbol" id="pb-symbol">—</div>
+  <div class="price-fullname" id="pb-fullname"></div>
   <div class="price-value" id="pb-price">—</div>
   <div class="price-change" id="pb-change">—</div>
-  <div class="price-stat">HIGH <span id="pb-high">—</span></div>
-  <div class="price-stat">LOW  <span id="pb-low">—</span></div>
-  <div class="price-stat">VOL  <span id="pb-vol">—</span></div>
+  <div class="price-stat">HIGH 高 <span id="pb-high">—</span></div>
+  <div class="price-stat">LOW 低 <span id="pb-low">—</span></div>
+  <div class="price-stat">VOL 量 <span id="pb-vol">—</span></div>
   <div class="price-stat">BARS <span id="pb-bars">—</span></div>
 </div>
 
-<!-- Main Layout -->
 <div class="layout">
-  <!-- Charts Column -->
   <div class="charts-col">
-    <!-- Candle + MA -->
-    <div class="panel" id="chart-main" style="flex:0 0 52%">
+    <div class="panel" style="flex:0 0 52%">
       <div class="panel-header">
-        <div class="panel-title">CANDLESTICK · MA</div>
+        <div class="panel-title">CANDLESTICK · MA 烛台·均线</div>
         <div class="legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#ffaa00"></div>MA5
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#4488ff"></div>MA20
-          </div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>MA5</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4488ff"></div>MA20</div>
         </div>
       </div>
-      <div class="chart-body">
-        <div id="main-chart-container"></div>
-      </div>
+      <div class="chart-body"><div id="main-chart-container"></div></div>
     </div>
 
-    <!-- RSI -->
-    <div class="panel" id="chart-rsi" style="flex:0 0 24%">
+    <div class="panel" style="flex:0 0 24%">
       <div class="panel-header">
-        <div class="panel-title">RSI(14)</div>
+        <div class="panel-title">RSI(14) RSI (14)</div>
         <div class="legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#ff4466"></div>OVERBOUGHT 70
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#00ff88"></div>OVERSOLD 30
-          </div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff4466"></div>OVERBOUGHT 70 超买70</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div>OVERSOLD 30 超卖30</div>
         </div>
       </div>
-      <div class="chart-body" style="padding:8px">
-        <canvas id="rsi-canvas"></canvas>
-      </div>
+      <div class="chart-body" style="padding:8px"><canvas id="rsi-canvas"></canvas></div>
     </div>
 
-    <!-- MACD -->
-    <div class="panel" id="chart-macd" style="flex:0 0 24%">
+    <div class="panel" style="flex:0 0 24%">
       <div class="panel-header">
-        <div class="panel-title">MACD(12,26,9)</div>
+        <div class="panel-title">MACD(12,26,9) MACD (12,26,9)</div>
         <div class="legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#ffaa00"></div>DIF
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#4488ff"></div>DEA
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#888"></div>HIST
-          </div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>DIF 离差值</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4488ff"></div>DEA 信号线</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#888"></div>HIST 柱形特</div>
         </div>
       </div>
-      <div class="chart-body" style="padding:8px">
-        <canvas id="macd-canvas"></canvas>
-      </div>
+      <div class="chart-body" style="padding:8px"><canvas id="macd-canvas"></canvas></div>
     </div>
   </div>
 
-  <!-- Side Panel -->
   <div class="side-panel">
-
-    <!-- OHLCV -->
     <div class="side-section">
-      <div class="side-title">LATEST BAR</div>
+      <div class="side-title">LATEST BAR 最新蜡烛</div>
       <div class="ohlcv-grid">
-        <div class="ohlcv-item">
-          <div class="ohlcv-label">OPEN</div>
-          <div class="ohlcv-val" id="s-open">—</div>
-        </div>
-        <div class="ohlcv-item">
-          <div class="ohlcv-label">HIGH</div>
-          <div class="ohlcv-val" style="color:var(--green)" id="s-high">—</div>
-        </div>
-        <div class="ohlcv-item">
-          <div class="ohlcv-label">LOW</div>
-          <div class="ohlcv-val" style="color:var(--red)" id="s-low">—</div>
-        </div>
-        <div class="ohlcv-item">
-          <div class="ohlcv-label">CLOSE</div>
-          <div class="ohlcv-val" id="s-close">—</div>
-        </div>
-        <div class="ohlcv-item" style="grid-column:1/-1">
-          <div class="ohlcv-label">VOLUME</div>
-          <div class="ohlcv-val" id="s-vol">—</div>
-        </div>
+        <div><div class="ohlcv-label">OPEN 开</div><div class="ohlcv-val" id="s-open">—</div></div>
+        <div><div class="ohlcv-label">HIGH 高</div><div class="ohlcv-val" style="color:var(--green)" id="s-high">—</div></div>
+        <div><div class="ohlcv-label">LOW 低</div><div class="ohlcv-val" style="color:var(--red)" id="s-low">—</div></div>
+        <div><div class="ohlcv-label">CLOSE 收</div><div class="ohlcv-val" id="s-close">—</div></div>
+        <div style="grid-column:1/-1"><div class="ohlcv-label">VOLUME 成交量</div><div class="ohlcv-val" id="s-vol">—</div></div>
       </div>
     </div>
 
-    <!-- Indicators -->
     <div class="side-section">
-      <div class="side-title">INDICATOR SIGNALS</div>
-
-      <div class="indicator-row">
-        <div class="ind-name">MA5</div>
-        <div class="ind-value" id="s-ma5">—</div>
-        <div class="ind-signal" id="sig-ma5">—</div>
-      </div>
-      <div class="indicator-row">
-        <div class="ind-name">MA20</div>
-        <div class="ind-value" id="s-ma20">—</div>
-        <div class="ind-signal" id="sig-ma20">—</div>
-      </div>
-      <div class="indicator-row">
-        <div class="ind-name">RSI(14)</div>
-        <div class="ind-value" id="s-rsi">—</div>
-        <div class="ind-signal" id="sig-rsi">—</div>
-      </div>
-      <div class="indicator-row">
-        <div class="ind-name">MACD DIF</div>
-        <div class="ind-value" id="s-dif">—</div>
-        <div class="ind-signal" id="sig-dif">—</div>
-      </div>
-      <div class="indicator-row">
-        <div class="ind-name">MACD DEA</div>
-        <div class="ind-value" id="s-dea">—</div>
-        <div class="ind-signal" id="sig-dea">—</div>
-      </div>
-      <div class="indicator-row">
-        <div class="ind-name">HISTOGRAM</div>
-        <div class="ind-value" id="s-hist">—</div>
-        <div class="ind-signal" id="sig-hist">—</div>
-      </div>
+      <div class="side-title">INDICATOR SIGNALS 指标信号</div>
+      <div class="indicator-row"><div class="ind-name">MA5</div><div class="ind-value" id="s-ma5">—</div><div class="ind-signal" id="sig-ma5">—</div></div>
+      <div class="indicator-row"><div class="ind-name">MA20</div><div class="ind-value" id="s-ma20">—</div><div class="ind-signal" id="sig-ma20">—</div></div>
+      <div class="indicator-row"><div class="ind-name">RSI(14)</div><div class="ind-value" id="s-rsi">—</div><div class="ind-signal" id="sig-rsi">—</div></div>
+      <div class="indicator-row"><div class="ind-name">MACD DIF</div><div class="ind-value" id="s-dif">—</div><div class="ind-signal" id="sig-dif">—</div></div>
+      <div class="indicator-row"><div class="ind-name">MACD DEA</div><div class="ind-value" id="s-dea">—</div><div class="ind-signal" id="sig-dea">—</div></div>
+      <div class="indicator-row"><div class="ind-name">HISTOGRAM 直方图</div><div class="ind-value" id="s-hist">—</div><div class="ind-signal" id="sig-hist">—</div></div>
     </div>
 
-    <!-- Overall Signal -->
     <div class="side-section">
-      <div class="side-title">COMPOSITE SIGNAL</div>
+      <div class="side-title">COMPOSITE SIGNAL 复合信号</div>
       <div style="text-align:center;padding:16px 0">
         <div id="composite-signal" style="font-size:18px;font-weight:600;letter-spacing:3px">—</div>
-        <div id="composite-score" style="font-size:10px;color:var(--text-dim);margin-top:6px">SCORE: —</div>
+        <div id="composite-cn" style="font-size:12px;margin-top:4px">—</div>
+        <div id="composite-score" style="font-size:10px;color:var(--text-dim);margin-top:6px">SCORE 评分: —</div>
       </div>
     </div>
 
-    <!-- About -->
     <div class="side-section">
-      <div class="side-title">ABOUT</div>
+      <div class="side-title">ABOUT 关于</div>
       <div style="color:var(--text-dim);font-size:10px;line-height:1.7">
         Built with Go · Binance API<br>
-        MA / EMA / RSI / MACD<br>
-        <br>
-        <span style="color:var(--green)">github.com/angqijiang-png</span><br>
-        <span style="color:var(--text-dim)">crypto-indicator</span>
+        用 Go · 币安 API<br>
+        MA / EMA / RSI / MACD<br><br>
+        <a href="https://github.com/angqijiang-png/crypto-indicator" target="_blank" style="color:var(--green);text-decoration:none">github.com/angqijiang-png</a><br>
+        crypto-indicator 加密指标器
       </div>
+      <div class="last-update" id="last-update"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ── State ──
-let mainChart = null, candleSeries = null, ma5Series = null, ma20Series = null;
+let mainChart, candleSeries, ma5Series, ma20Series;
 let rsiChart = null, macdChart = null;
+let cdTimer = null, cdSec = 0;
+let firstLoad = true;
+const INTERVAL = 30;
 
-const API = '';  // 同源，不需要前缀
+const NAMES = {
+  BTCUSDT:'Bitcoin',ETHUSDT:'Ethereum',SOLUSDT:'Solana',BNBUSDT:'BNB',
+  XRPUSDT:'XRP',DOGEUSDT:'Dogecoin',ADAUSDT:'Cardano',AVAXUSDT:'Avalanche',
+};
+const CN_SIGNAL = {5:'强牛',4:'看涨',3:'中性',2:'看跌',0:'强熊'};
 
-// ── Helpers ──
-const fmt = (n, d=2) => n == null || isNaN(n) ? '—' : n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
-const fmtVol = v => v >= 1e9 ? (v/1e9).toFixed(2)+'B' : v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(0);
+const fmt = (n,d=2) => n==null||isNaN(n) ? '—' : n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtVol = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':v.toFixed(0);
 
-function setSignal(el, type) {
-  el.className = 'ind-signal ' + (type==='bull' ? 'signal-bull' : type==='bear' ? 'signal-bear' : 'signal-neut');
-  el.textContent = type==='bull' ? 'BULL' : type==='bear' ? 'BEAR' : 'NEUT';
+function setSignal(el,t){
+  el.className='ind-signal '+(t==='bull'?'signal-bull':t==='bear'?'signal-bear':'signal-neut');
+  el.textContent=t==='bull'?'BULL 多':t==='bear'?'BEAR 空':'NEUT 中';
+}
+function showError(m){const e=document.getElementById('error-box');e.style.display='block';e.textContent='⚠ '+m;}
+function clearError(){document.getElementById('error-box').style.display='none';}
+
+function fmtLabel(ms,iv){
+  const d=new Date(ms), p=n=>String(n).padStart(2,'0');
+  if(iv==='1h'||iv==='4h') return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  if(iv==='1w') return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())}`;
+  return `${d.getMonth()+1}/${d.getDate()}`;
 }
 
-function showError(msg) {
-  const el = document.getElementById('error-box');
-  el.style.display = 'block';
-  el.textContent = '⚠ ' + msg;
+function initMainChart(){
+  const c=document.getElementById('main-chart-container');
+  c.style.width='100%'; c.style.height='100%';
+  mainChart=LightweightCharts.createChart(c,{
+    layout:{background:{color:'#060810'},textColor:'#484f58'},
+    grid:{vertLines:{color:'#0d1117'},horzLines:{color:'#0d1117'}},
+    crosshair:{vertLine:{color:'#00ff8840',labelBackgroundColor:'#0d1117'},horzLine:{color:'#00ff8840',labelBackgroundColor:'#0d1117'}},
+    rightPriceScale:{borderColor:'#1c2333'},
+    timeScale:{borderColor:'#1c2333',timeVisible:true,secondsVisible:false},
+  });
+  candleSeries=mainChart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff4466',borderUpColor:'#00ff88',borderDownColor:'#ff4466',wickUpColor:'#00cc66',wickDownColor:'#cc3355'});
+  ma5Series=mainChart.addLineSeries({color:'#ffaa00',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+  ma20Series=mainChart.addLineSeries({color:'#4488ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+  new ResizeObserver(()=>{const r=c.getBoundingClientRect();if(r.width&&r.height)mainChart.applyOptions({width:r.width,height:r.height});}).observe(c);
 }
 
-function clearError() {
-  document.getElementById('error-box').style.display = 'none';
-}
+async function loadData(){
+  const symbol=document.getElementById('sel-symbol').value;
+  const interval=document.getElementById('sel-interval').value;
+  const limit=document.getElementById('sel-limit').value;
+  const btn=document.getElementById('btn-load');
+  btn.disabled=true; clearError();
+  if(firstLoad) document.getElementById('overlay').classList.remove('hidden');
 
-// ── Charts Init ──
-function initMainChart() {
-  const container = document.getElementById('main-chart-container');
-  container.style.width  = '100%';
-  container.style.height = '100%';
-
-  mainChart = LightweightCharts.createChart(container, {
-    layout: {
-      background: { color: '#060810' },
-      textColor:  '#484f58',
-    },
-    grid: {
-      vertLines: { color: '#0d1117' },
-      horzLines: { color: '#0d1117' },
-    },
-    crosshair: {
-      vertLine: { color: '#00ff8840', labelBackgroundColor: '#0d1117' },
-      horzLine: { color: '#00ff8840', labelBackgroundColor: '#0d1117' },
-    },
-    rightPriceScale: { borderColor: '#1c2333' },
-    timeScale: {
-      borderColor: '#1c2333',
-      timeVisible: true,
-      secondsVisible: false,
-    },
-  });
-
-  candleSeries = mainChart.addCandlestickSeries({
-    upColor:         '#00ff88',
-    downColor:       '#ff4466',
-    borderUpColor:   '#00ff88',
-    borderDownColor: '#ff4466',
-    wickUpColor:     '#00cc66',
-    wickDownColor:   '#cc3355',
-  });
-
-  ma5Series = mainChart.addLineSeries({
-    color:       '#ffaa00',
-    lineWidth:   1,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-
-  ma20Series = mainChart.addLineSeries({
-    color:       '#4488ff',
-    lineWidth:   1,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-
-  // resize observer
-  new ResizeObserver(() => {
-    const rect = container.getBoundingClientRect();
-    if (rect.width && rect.height) {
-      mainChart.applyOptions({ width: rect.width, height: rect.height });
-    }
-  }).observe(container);
-}
-
-function initSubChart(canvasId, datasets, options = {}) {
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
-
-  // destroy old
-  const old = Chart.getChart(canvas);
-  if (old) old.destroy();
-
-  return new Chart(ctx, {
-    type: 'line',
-    data: { labels: [], datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false,
-        callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(4)}` }
-      }},
-      scales: {
-        x: {
-          ticks: { color: '#484f58', maxTicksLimit: 8, maxRotation: 0, font: { family: 'IBM Plex Mono', size: 9 } },
-          grid:  { color: '#0d1117' },
-        },
-        y: {
-          position: 'right',
-          ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 9 } },
-          grid:  { color: '#0d1117' },
-          ...options.yAxis,
-        },
-      },
-      ...options.chart,
-    },
-  });
-}
-
-// ── Load Data ──
-async function loadData() {
-  const symbol   = document.getElementById('sel-symbol').value;
-  const interval = document.getElementById('sel-interval').value;
-  const limit    = document.getElementById('sel-limit').value;
-  const btn      = document.getElementById('btn-load');
-
-  btn.disabled = true;
-  clearError();
-  document.getElementById('overlay').classList.remove('hidden');
-
-  try {
-    const res = await fetch(`${API}/api/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const d = await res.json();
-    if (d.error) throw new Error(d.error);
-
+  try{
+    const res=await fetch(`/api/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d=await res.json();
+    if(d.error) throw new Error(d.error);
     renderAll(d);
-  } catch(e) {
-    showError(e.message);
-    console.error(e);
-  } finally {
-    btn.disabled = false;
-    document.getElementById('overlay').classList.add('hidden');
-  }
+    document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
+  }catch(e){showError(e.message);console.error(e);}
+  finally{btn.disabled=false;firstLoad=false;document.getElementById('overlay').classList.add('hidden');}
 }
 
-function renderAll(d) {
-  const klines = d.klines;
-  const n      = klines.length;
-  if (!n) return;
+function renderAll(d){
+  const klines=d.klines,n=klines.length;
+  if(!n)return;
+  const last=klines[n-1],prev=klines[n-2]||klines[0];
+  const iv=document.getElementById('sel-interval').value;
 
-  const last = klines[n-1];
-  const prev = klines[n-2] || klines[0];
+  // Price bar
+  const chg=(last.close-prev.close)/prev.close*100;
+  const ce=document.getElementById('pb-change');
+  ce.textContent=(chg>=0?'+':'')+chg.toFixed(2)+'%';
+  ce.className='price-change '+(chg>=0?'up':'down');
+  document.getElementById('pb-symbol').textContent=d.symbol;
+  document.getElementById('pb-fullname').textContent=(NAMES[d.symbol]||'')+' ('+d.symbol+')';
+  const pe=document.getElementById('pb-price');
+  pe.textContent=fmt(last.close); pe.style.color=chg>=0?'var(--green)':'var(--red)';
+  document.getElementById('pb-high').textContent=fmt(Math.max(...klines.map(k=>k.high)));
+  document.getElementById('pb-low').textContent=fmt(Math.min(...klines.map(k=>k.low)));
+  document.getElementById('pb-vol').textContent=fmtVol(klines.reduce((s,k)=>s+k.volume,0));
+  document.getElementById('pb-bars').textContent=n;
+  document.title=`${fmt(last.close)} ${d.symbol} | CryptoIndicator`;
 
-  // ── Price Bar ──
-  const chg    = ((last.close - prev.close) / prev.close * 100);
-  const chgEl  = document.getElementById('pb-change');
-  chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-  chgEl.className   = 'price-change ' + (chg >= 0 ? 'up' : 'down');
-
-  document.getElementById('pb-symbol').textContent = d.symbol;
-  document.getElementById('pb-price').textContent  = fmt(last.close);
-  document.getElementById('pb-high').textContent   = fmt(Math.max(...klines.map(k=>k.high)));
-  document.getElementById('pb-low').textContent    = fmt(Math.min(...klines.map(k=>k.low)));
-  document.getElementById('pb-vol').textContent    = fmtVol(klines.reduce((s,k)=>s+k.volume,0));
-  document.getElementById('pb-bars').textContent   = n;
-
-  // ── Candle chart ──
-  const toTime = ms => Math.floor(ms / 1000);
-
-  candleSeries.setData(klines.map(k => ({
-    time: toTime(k.open_time),
-    open: k.open, high: k.high, low: k.low, close: k.close,
-  })));
-
-  const validMA5 = d.ma5.map((v,i) => v > 0 ? { time: toTime(klines[i].open_time), value: v } : null).filter(Boolean);
-  const validMA20 = d.ma20.map((v,i) => v > 0 ? { time: toTime(klines[i].open_time), value: v } : null).filter(Boolean);
-
-  ma5Series.setData(validMA5);
-  ma20Series.setData(validMA20);
+  // Candle
+  const toT=ms=>Math.floor(ms/1000);
+  candleSeries.setData(klines.map(k=>({time:toT(k.open_time),open:k.open,high:k.high,low:k.low,close:k.close})));
+  ma5Series.setData(d.ma5.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
+  ma20Series.setData(d.ma20.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
   mainChart.timeScale().fitContent();
 
-  // ── Labels for sub charts (last 80 bars) ──
-  const sub = Math.min(n, 80);
-  const labels = klines.slice(-sub).map(k => {
-    const dt = new Date(k.open_time);
-    return `${dt.getMonth()+1}/${dt.getDate()}`;
+  // Sub chart labels - with proper time formatting based on interval
+  const sub=Math.min(n,80);
+  const labels=klines.slice(-sub).map(k=>fmtLabel(k.open_time,iv));
+
+  // RSI - destroy old first
+  if(rsiChart){rsiChart.destroy();rsiChart=null;}
+  const rsiData=d.rsi14.slice(-sub).map(v=>v>0?+v.toFixed(2):null);
+  const rsiCanvas=document.getElementById('rsi-canvas');
+  rsiChart=new Chart(rsiCanvas.getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'RSI(14)',data:rsiData,borderColor:'#ffaa00',borderWidth:1.5,pointRadius:0,tension:.3,fill:false,spanGaps:true},
+      {label:'OB',data:Array(sub).fill(70),borderColor:'#ff446666',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+      {label:'OS',data:Array(sub).fill(30),borderColor:'#00ff8866',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{ticks:{color:'#484f58',maxTicksLimit:8,maxRotation:0,font:{family:'IBM Plex Mono',size:9}},grid:{color:'#0d1117'}},
+        y:{position:'right',min:0,max:100,ticks:{color:'#484f58',font:{family:'IBM Plex Mono',size:9}},grid:{color:'#0d1117'}},
+      }
+    }
   });
 
-  // ── RSI Chart ──
-  const rsiData = d.rsi14.slice(-sub).map(v => v > 0 ? +v.toFixed(2) : null);
-
-  rsiChart = initSubChart('rsi-canvas', [
-    {
-      label: 'RSI(14)',
-      data: rsiData,
-      borderColor: '#ffaa00',
-      borderWidth: 1.5,
-      pointRadius: 0,
-      tension: 0.3,
-      fill: false,
-      spanGaps: true,
-    },
-    {
-      label: 'OB',
-      data: Array(sub).fill(70),
-      borderColor: '#ff446666',
-      borderWidth: 1,
-      borderDash: [4,4],
-      pointRadius: 0,
-      fill: false,
-    },
-    {
-      label: 'OS',
-      data: Array(sub).fill(30),
-      borderColor: '#00ff8866',
-      borderWidth: 1,
-      borderDash: [4,4],
-      pointRadius: 0,
-      fill: false,
-    },
-  ], {
-    yAxis: { min: 0, max: 100 }
+  // MACD - destroy old first
+  if(macdChart){macdChart.destroy();macdChart=null;}
+  const difData=d.macd.dif.slice(-sub).map(v=>+v.toFixed(4));
+  const deaData=d.macd.dea.slice(-sub).map(v=>+v.toFixed(4));
+  const histData=d.macd.macd.slice(-sub).map(v=>+v.toFixed(4));
+  macdChart=new Chart(document.getElementById('macd-canvas').getContext('2d'),{
+    data:{labels,datasets:[
+      {type:'bar',label:'HIST',data:histData,backgroundColor:histData.map(v=>v>=0?'#00ff8880':'#ff446680'),borderColor:histData.map(v=>v>=0?'#00ff88':'#ff4466'),borderWidth:1,order:2},
+      {type:'line',label:'DIF',data:difData,borderColor:'#ffaa00',borderWidth:1.5,pointRadius:0,tension:.2,fill:false,order:1},
+      {type:'line',label:'DEA',data:deaData,borderColor:'#4488ff',borderWidth:1.5,pointRadius:0,tension:.2,fill:false,order:1},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{ticks:{color:'#484f58',maxTicksLimit:8,maxRotation:0,font:{family:'IBM Plex Mono',size:9}},grid:{color:'#0d1117'}},
+        y:{position:'right',ticks:{color:'#484f58',font:{family:'IBM Plex Mono',size:9}},grid:{color:'#0d1117'}},
+      }
+    }
   });
 
-  rsiChart.data.labels = labels;
-  rsiChart.update();
+  // Side panel
+  const ma5v=d.ma5[n-1],ma20v=d.ma20[n-1],rsiV=d.rsi14[n-1];
+  const difV=d.macd.dif[n-1],deaV=d.macd.dea[n-1],histV=d.macd.macd[n-1];
+  document.getElementById('s-open').textContent=fmt(last.open);
+  document.getElementById('s-high').textContent=fmt(last.high);
+  document.getElementById('s-low').textContent=fmt(last.low);
+  document.getElementById('s-close').textContent=fmt(last.close);
+  document.getElementById('s-vol').textContent=fmtVol(last.volume);
+  document.getElementById('s-ma5').textContent=fmt(ma5v);
+  document.getElementById('s-ma20').textContent=fmt(ma20v);
+  document.getElementById('s-rsi').textContent=fmt(rsiV);
+  document.getElementById('s-dif').textContent=fmt(difV,4);
+  document.getElementById('s-dea').textContent=fmt(deaV,4);
+  document.getElementById('s-hist').textContent=fmt(histV,4);
 
-  // ── MACD Chart ──
-  const difData  = d.macd.dif.slice(-sub).map(v => +v.toFixed(4));
-  const deaData  = d.macd.dea.slice(-sub).map(v => +v.toFixed(4));
-  const histData = d.macd.macd.slice(-sub).map(v => +v.toFixed(4));
+  setSignal(document.getElementById('sig-ma5'),last.close>ma5v?'bull':'bear');
+  setSignal(document.getElementById('sig-ma20'),last.close>ma20v?'bull':'bear');
+  setSignal(document.getElementById('sig-rsi'),rsiV>70?'bear':rsiV<30?'bull':'neut');
+  setSignal(document.getElementById('sig-dif'),difV>0?'bull':'bear');
+  setSignal(document.getElementById('sig-dea'),deaV>0?'bull':'bear');
+  setSignal(document.getElementById('sig-hist'),histV>0?'bull':'bear');
 
-  const histColors = histData.map(v => v >= 0 ? '#00ff8880' : '#ff446680');
-  const histBorder = histData.map(v => v >= 0 ? '#00ff88' : '#ff4466');
+  let score=0;
+  if(last.close>ma5v)score++;if(last.close>ma20v)score++;if(ma5v>ma20v)score++;
+  if(rsiV>50)score++;if(difV>deaV)score++;if(histV>0)score++;
+  const comp=document.getElementById('composite-signal');
+  const compCn=document.getElementById('composite-cn');
+  document.getElementById('composite-score').textContent=`SCORE 评分: ${score}/6`;
 
-  macdChart = new Chart(document.getElementById('macd-canvas').getContext('2d'), {
-    data: {
-      labels,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'HIST',
-          data: histData,
-          backgroundColor: histColors,
-          borderColor: histBorder,
-          borderWidth: 1,
-          order: 2,
-        },
-        {
-          type: 'line',
-          label: 'DIF',
-          data: difData,
-          borderColor: '#ffaa00',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          tension: 0.2,
-          fill: false,
-          order: 1,
-        },
-        {
-          type: 'line',
-          label: 'DEA',
-          data: deaData,
-          borderColor: '#4488ff',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          tension: 0.2,
-          fill: false,
-          order: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-      scales: {
-        x: {
-          ticks: { color: '#484f58', maxTicksLimit: 8, maxRotation: 0, font: { family: 'IBM Plex Mono', size: 9 } },
-          grid:  { color: '#0d1117' },
-        },
-        y: {
-          position: 'right',
-          ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 9 } },
-          grid:  { color: '#0d1117' },
-        },
-      },
-    },
-  });
-
-  // ── Side Panel ──
-  const ma5val  = d.ma5[n-1];
-  const ma20val = d.ma20[n-1];
-  const rsiVal  = d.rsi14[n-1];
-  const difVal  = d.macd.dif[n-1];
-  const deaVal  = d.macd.dea[n-1];
-  const histVal = d.macd.macd[n-1];
-
-  document.getElementById('s-open').textContent  = fmt(last.open);
-  document.getElementById('s-high').textContent  = fmt(last.high);
-  document.getElementById('s-low').textContent   = fmt(last.low);
-  document.getElementById('s-close').textContent = fmt(last.close);
-  document.getElementById('s-vol').textContent   = fmtVol(last.volume);
-
-  document.getElementById('s-ma5').textContent  = fmt(ma5val);
-  document.getElementById('s-ma20').textContent = fmt(ma20val);
-  document.getElementById('s-rsi').textContent  = fmt(rsiVal);
-  document.getElementById('s-dif').textContent  = fmt(difVal, 4);
-  document.getElementById('s-dea').textContent  = fmt(deaVal, 4);
-  document.getElementById('s-hist').textContent = fmt(histVal, 4);
-
-  // Signals
-  setSignal(document.getElementById('sig-ma5'),  last.close > ma5val  ? 'bull' : 'bear');
-  setSignal(document.getElementById('sig-ma20'), last.close > ma20val ? 'bull' : 'bear');
-  setSignal(document.getElementById('sig-rsi'),  rsiVal > 70 ? 'bear' : rsiVal < 30 ? 'bull' : 'neut');
-  setSignal(document.getElementById('sig-dif'),  difVal > 0 ? 'bull' : 'bear');
-  setSignal(document.getElementById('sig-dea'),  deaVal > 0 ? 'bull' : 'bear');
-  setSignal(document.getElementById('sig-hist'), histVal > 0 ? 'bull' : 'bear');
-
-  // Composite
-  let score = 0;
-  if (last.close > ma5val)  score++;
-  if (last.close > ma20val) score++;
-  if (ma5val > ma20val)     score++;
-  if (rsiVal > 50)          score++;
-  if (difVal > deaVal)      score++;
-  if (histVal > 0)          score++;
-
-  const comp = document.getElementById('composite-signal');
-  const compScore = document.getElementById('composite-score');
-
-  compScore.textContent = `SCORE: ${score}/6`;
-
-  if (score >= 5) {
-    comp.textContent = 'STRONG BULL';
-    comp.style.color = '#00ff88';
-  } else if (score >= 4) {
-    comp.textContent = 'BULL';
-    comp.style.color = '#00cc66';
-  } else if (score >= 3) {
-    comp.textContent = 'NEUTRAL';
-    comp.style.color = '#ffaa00';
-  } else if (score >= 2) {
-    comp.textContent = 'BEAR';
-    comp.style.color = '#ff4466';
-  } else {
-    comp.textContent = 'STRONG BEAR';
-    comp.style.color = '#cc2244';
+  const sigs=[[5,'STRONG BULL','#00ff88'],[4,'BULL','#00cc66'],[3,'NEUTRAL','#ffaa00'],[2,'BEAR','#ff4466'],[0,'STRONG BEAR','#cc2244']];
+  const cnSigs={5:'强牛',4:'看涨',3:'中性',2:'看跌',0:'强熊'};
+  for(const[min,label,color]of sigs){
+    if(score>=min){comp.textContent=label;comp.style.color=color;compCn.textContent=cnSigs[min];compCn.style.color=color;break;}
   }
 }
 
-// ── Init ──
-window.addEventListener('DOMContentLoaded', () => {
+// Auto refresh
+function startAuto(){
+  stopAuto(); cdSec=INTERVAL; updCd();
+  cdTimer=setInterval(()=>{cdSec--;updCd();if(cdSec<=0){loadData();cdSec=INTERVAL;}},1000);
+  document.getElementById('auto-box').classList.add('on');
+}
+function stopAuto(){
+  if(cdTimer)clearInterval(cdTimer);cdTimer=null;
+  document.getElementById('cd').textContent='';
+  document.getElementById('auto-box').classList.remove('on');
+}
+function updCd(){document.getElementById('cd').textContent=cdSec+'s';}
+
+window.addEventListener('DOMContentLoaded',()=>{
   initMainChart();
-  document.getElementById('btn-load').addEventListener('click', loadData);
+
+  document.getElementById('btn-load').addEventListener('click',()=>{
+    loadData();
+    if(document.getElementById('chk-auto').checked)startAuto();
+  });
+
+  // FIX: auto-load on any dropdown change
+  ['sel-symbol','sel-interval','sel-limit'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',()=>{
+      loadData();
+      if(document.getElementById('chk-auto').checked)startAuto();
+    });
+  });
+
+  document.getElementById('chk-auto').addEventListener('change',e=>{
+    e.target.checked?startAuto():stopAuto();
+  });
+
   loadData();
+  startAuto();
 });
 </script>
 </body>
