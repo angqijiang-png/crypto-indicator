@@ -4,7 +4,7 @@
 
 ![Go](https://img.shields.io/badge/Go-1.21-00ADD8?style=flat&logo=go)
 ![Binance](https://img.shields.io/badge/Data-Binance%20API-F0B90B?style=flat)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+![License](https://img.shields.io/badge/License-MIT-green?style=fla
 
 ## Overview
 
