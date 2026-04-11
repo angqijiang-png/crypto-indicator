@@ -9,10 +9,13 @@ import (
 	"crypto-indicator/model"
 )
 
-func FetchKlines(symbol, interval string) ([]model.Kline, error) {
+func FetchKlines(symbol, interval string, limit int) ([]model.Kline, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 200
+	}
 	url := fmt.Sprintf(
-		"https://api.binance.com/api/v3/klines?symbol=%s&interval=%s&limit=200",
-		symbol, interval,
+		"https://api.binance.com/api/v3/klines?symbol=%s&interval=%s&limit=%d",
+		symbol, interval, limit,
 	)
 
 	resp, err := http.Get(url)

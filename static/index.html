@@ -209,6 +209,7 @@
         <div class="legend">
           <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>MA5</div>
           <div class="legend-item"><div class="legend-dot" style="background:#4488ff"></div>MA20</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#cc44ff"></div>BB(20,2)</div>
         </div>
       </div>
       <div class="chart-body"><div id="main-chart-container"></div></div>
@@ -255,6 +256,8 @@
       <div class="indicator-row"><div class="ind-name">MA5</div><div class="ind-value" id="s-ma5">—</div><div class="ind-signal" id="sig-ma5">—</div></div>
       <div class="indicator-row"><div class="ind-name">MA20</div><div class="ind-value" id="s-ma20">—</div><div class="ind-signal" id="sig-ma20">—</div></div>
       <div class="indicator-row"><div class="ind-name">RSI(14)</div><div class="ind-value" id="s-rsi">—</div><div class="ind-signal" id="sig-rsi">—</div></div>
+      <div class="indicator-row"><div class="ind-name">BB Upper</div><div class="ind-value" id="s-bbu">—</div><div class="ind-signal" id="sig-bb">—</div></div>
+      <div class="indicator-row"><div class="ind-name">BB Lower</div><div class="ind-value" id="s-bbl">—</div><div style="width:50px"></div></div>
       <div class="indicator-row"><div class="ind-name">MACD DIF</div><div class="ind-value" id="s-dif">—</div><div class="ind-signal" id="sig-dif">—</div></div>
       <div class="indicator-row"><div class="ind-name">MACD DEA</div><div class="ind-value" id="s-dea">—</div><div class="ind-signal" id="sig-dea">—</div></div>
       <div class="indicator-row"><div class="ind-name">HISTOGRAM 直方图</div><div class="ind-value" id="s-hist">—</div><div class="ind-signal" id="sig-hist">—</div></div>
@@ -284,7 +287,7 @@
 </div>
 
 <script>
-let mainChart, candleSeries, ma5Series, ma20Series;
+let mainChart, candleSeries, ma5Series, ma20Series, bbUpperSeries, bbMidSeries, bbLowerSeries;
 let rsiChart = null, macdChart = null;
 let cdTimer = null, cdSec = 0;
 let firstLoad = true;
@@ -326,6 +329,9 @@ function initMainChart(){
   candleSeries=mainChart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff4466',borderUpColor:'#00ff88',borderDownColor:'#ff4466',wickUpColor:'#00cc66',wickDownColor:'#cc3355'});
   ma5Series=mainChart.addLineSeries({color:'#ffaa00',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
   ma20Series=mainChart.addLineSeries({color:'#4488ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+  bbUpperSeries=mainChart.addLineSeries({color:'#cc44ff80',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
+  bbMidSeries=mainChart.addLineSeries({color:'#cc44ff50',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
+  bbLowerSeries=mainChart.addLineSeries({color:'#cc44ff80',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
   new ResizeObserver(()=>{const r=c.getBoundingClientRect();if(r.width&&r.height)mainChart.applyOptions({width:r.width,height:r.height});}).observe(c);
 }
 
@@ -374,6 +380,11 @@ function renderAll(d){
   candleSeries.setData(klines.map(k=>({time:toT(k.open_time),open:k.open,high:k.high,low:k.low,close:k.close})));
   ma5Series.setData(d.ma5.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
   ma20Series.setData(d.ma20.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
+  if(d.bb20){
+    bbUpperSeries.setData(d.bb20.upper.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
+    bbMidSeries.setData(d.bb20.mid.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
+    bbLowerSeries.setData(d.bb20.lower.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
+  }
   mainChart.timeScale().fitContent();
 
   // Sub chart labels - with proper time formatting based on interval
@@ -434,11 +445,15 @@ function renderAll(d){
   // Side panel
   const ma5v=d.ma5[n-1],ma20v=d.ma20[n-1],rsiV=d.rsi14[n-1];
   const difV=d.macd.dif[n-1],deaV=d.macd.dea[n-1],histV=d.macd.macd[n-1];
+  const bbuV=d.bb20?d.bb20.upper[n-1]:null,bblV=d.bb20?d.bb20.lower[n-1]:null;
   document.getElementById('s-open').textContent=fmt(last.open);
   document.getElementById('s-high').textContent=fmt(last.high);
   document.getElementById('s-low').textContent=fmt(last.low);
   document.getElementById('s-close').textContent=fmt(last.close);
   document.getElementById('s-vol').textContent=fmtVol(last.volume);
+  document.getElementById('s-bbu').textContent=fmt(bbuV);
+  document.getElementById('s-bbl').textContent=fmt(bblV);
+  if(bbuV&&bblV) setSignal(document.getElementById('sig-bb'),last.close>bbuV?'bear':last.close<bblV?'bull':'neut');
   document.getElementById('s-ma5').textContent=fmt(ma5v);
   document.getElementById('s-ma20').textContent=fmt(ma20v);
   document.getElementById('s-rsi').textContent=fmt(rsiV);

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"crypto-indicator/calculator"
 	"crypto-indicator/fetcher"
@@ -11,6 +12,18 @@ import (
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, `{"code":200,"message":"ok"}`)
+}
+
+func parseLimit(r *http.Request) int {
+	v := r.URL.Query().Get("limit")
+	if v == "" {
+		return 200
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n <= 0 || n > 1000 {
+		return 200
+	}
+	return n
 }
 
 func klineHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +36,7 @@ func klineHandler(w http.ResponseWriter, r *http.Request) {
 		interval = "1d"
 	}
 
-	klines, err := fetcher.FetchKlines(symbol, interval)
+	klines, err := fetcher.FetchKlines(symbol, interval, parseLimit(r))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,7 +56,7 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 		interval = "1d"
 	}
 
-	klines, err := fetcher.FetchKlines(symbol, interval)
+	klines, err := fetcher.FetchKlines(symbol, interval, parseLimit(r))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -62,6 +75,7 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 		"ma20":     calculator.MA(closes, 20),
 		"rsi14":    calculator.RSI(closes, 14),
 		"macd":     calculator.MACD(closes, 12, 26, 9),
+		"bb20":     calculator.BollingerBands(closes, 20, 2.0),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

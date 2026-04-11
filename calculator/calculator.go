@@ -1,5 +1,7 @@
 package calculator
 
+import "math"
+
 // MA 简单移动平均线
 func MA(prices []float64, period int) []float64 {
 	result := make([]float64, len(prices))
@@ -62,6 +64,36 @@ func RSI(prices []float64, period int) []float64 {
 		result[i] = 100 - (100 / (1 + rs))
 	}
 	return result
+}
+
+// BBResult 存储布林带三条线
+type BBResult struct {
+	Upper []float64 `json:"upper"`
+	Mid   []float64 `json:"mid"`
+	Lower []float64 `json:"lower"`
+}
+
+// BollingerBands 计算布林带（默认参数：period=20, mult=2.0）
+func BollingerBands(prices []float64, period int, mult float64) BBResult {
+	n := len(prices)
+	res := BBResult{Upper: make([]float64, n), Mid: make([]float64, n), Lower: make([]float64, n)}
+	if n < period {
+		return res
+	}
+	mid := MA(prices, period)
+	for i := period - 1; i < n; i++ {
+		mean := mid[i]
+		variance := 0.0
+		for j := i - (period - 1); j <= i; j++ {
+			d := prices[j] - mean
+			variance += d * d
+		}
+		std := math.Sqrt(variance / float64(period))
+		res.Upper[i] = mean + mult*std
+		res.Mid[i] = mean
+		res.Lower[i] = mean - mult*std
+	}
+	return res
 }
 
 // MACDResult 存储 MACD 三条线
