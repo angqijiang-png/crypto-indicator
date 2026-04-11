@@ -87,6 +87,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/api/kline", klineHandler)
 	http.HandleFunc("/api/indicator", indicatorHandler)
+	http.HandleFunc("/ws/indicator", wsIndicatorHandler)
 
 	fmt.Println("服务启动在 http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

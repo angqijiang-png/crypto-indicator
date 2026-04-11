@@ -205,8 +205,8 @@
   </div>
   <div class="header-right">
     <button id="btn-notif" style="font-size:10px;padding:4px 10px;border-color:var(--text-muted);color:var(--text-dim)" title="点击开启 RSI 超买/超卖通知">🔔 ALERTS</button>
-    <div class="live-dot"></div>
-    <div class="live-label">LIVE · BINANCE</div>
+    <div class="live-dot" id="live-dot"></div>
+    <div class="live-label" id="live-label">CONNECTING...</div>
   </div>
 </header>
 
@@ -366,7 +366,8 @@ let mainChart, candleSeries, ma5Series, ma20Series, bbUpperSeries, bbMidSeries, 
 let rsiChart = null, macdChart = null;
 let cdTimer = null, cdSec = 0;
 let firstLoad = true;
-const INTERVAL = 30;
+const PUSH_INTERVAL = 30;
+let ws = null, wsReconnectTimer = null;
 
 // RSI alert state — track last known RSI to detect crossings
 let prevRsi = null;
@@ -441,22 +442,62 @@ function initMainChart(){
   new ResizeObserver(()=>{const r=c.getBoundingClientRect();if(r.width&&r.height)mainChart.applyOptions({width:r.width,height:r.height});}).observe(c);
 }
 
-async function loadData(){
-  const symbolRaw=document.getElementById('sel-symbol').value.trim().toUpperCase();
-  const symbol=symbolRaw||'BTCUSDT';
-  document.getElementById('sel-symbol').value=symbol;
+// ── WebSocket transport ───────────────────────────────────────────────────
+
+function setStatus(state){
+  const dot=document.getElementById('live-dot');
+  const lbl=document.getElementById('live-label');
+  if(state==='live')        {dot.style.background='var(--green)';lbl.textContent='LIVE · WS';}
+  else if(state==='connecting'){dot.style.background='var(--amber)';lbl.textContent='CONNECTING...';}
+  else                      {dot.style.background='var(--red)';  lbl.textContent='DISCONNECTED';}
+}
+
+function getParams(){
+  const sym=document.getElementById('sel-symbol').value.trim().toUpperCase()||'BTCUSDT';
+  document.getElementById('sel-symbol').value=sym;
+  return {symbol:sym, interval:document.getElementById('sel-interval').value, limit:document.getElementById('sel-limit').value};
+}
+
+function connectWS(){
+  if(ws){ws.close();ws=null;}
+  if(wsReconnectTimer){clearTimeout(wsReconnectTimer);wsReconnectTimer=null;}
+  clearError(); setStatus('connecting');
+  const {symbol,interval,limit}=getParams();
+  if(!/^[A-Z0-9]{3,12}$/.test(symbol)){showError('Invalid symbol: use format like BTCUSDT');setStatus('disconnected');return;}
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  try{ ws=new WebSocket(`${proto}//${location.host}/ws/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`); }
+  catch(e){ setStatus('disconnected'); return; }
+  ws.onopen=()=>setStatus('live');
+  ws.onmessage=e=>{
+    try{
+      const d=JSON.parse(e.data);
+      if(d.error) throw new Error(d.error);
+      renderAll(d);
+      document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
+      if(firstLoad){document.getElementById('overlay').classList.add('hidden');firstLoad=false;}
+      resetCd();
+    }catch(err){showError(err.message);console.error(err);}
+  };
+  ws.onerror=()=>setStatus('disconnected');
+  ws.onclose=()=>{
+    ws=null; setStatus('disconnected');
+    if(document.getElementById('chk-auto').checked)
+      wsReconnectTimer=setTimeout(connectWS,5000);
+  };
+}
+
+// HTTP fallback (used when AUTO is off and user clicks LOAD)
+async function loadHttp(){
+  const {symbol,interval,limit}=getParams();
   if(!/^[A-Z0-9]{3,12}$/.test(symbol)){showError('Invalid symbol: use format like BTCUSDT');return;}
-  const interval=document.getElementById('sel-interval').value;
-  const limit=document.getElementById('sel-limit').value;
   const btn=document.getElementById('btn-load');
   btn.disabled=true; clearError();
-  if(firstLoad) document.getElementById('overlay').classList.remove('hidden');
-
+  if(firstLoad)document.getElementById('overlay').classList.remove('hidden');
   try{
     const res=await fetch(`/api/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const d=await res.json();
-    if(d.error) throw new Error(d.error);
+    if(d.error)throw new Error(d.error);
     renderAll(d);
     document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
   }catch(e){showError(e.message);console.error(e);}
@@ -592,19 +633,39 @@ function renderAll(d){
   }
 }
 
-// Auto refresh
-function startAuto(){
-  stopAuto(); cdSec=INTERVAL; updCd();
-  cdTimer=setInterval(()=>{cdSec--;updCd();if(cdSec<=0){loadData();cdSec=INTERVAL;}},1000);
-  document.getElementById('auto-box').classList.add('on');
+// ── Countdown (resets each time server pushes) ───────────────────────────
+function resetCd(){
+  if(cdTimer)clearInterval(cdTimer);
+  cdSec=PUSH_INTERVAL; updCd();
+  cdTimer=setInterval(()=>{cdSec--;updCd();if(cdSec<=0)clearInterval(cdTimer);},1000);
 }
-function stopAuto(){
-  if(cdTimer)clearInterval(cdTimer);cdTimer=null;
+function stopCd(){
+  if(cdTimer){clearInterval(cdTimer);cdTimer=null;}
   document.getElementById('cd').textContent='';
-  document.getElementById('auto-box').classList.remove('on');
 }
 function updCd(){document.getElementById('cd').textContent=cdSec+'s';}
 
+// ── Auto / Manual mode ────────────────────────────────────────────────────
+function startAuto(){
+  document.getElementById('auto-box').classList.add('on');
+  connectWS();
+}
+function stopAuto(){
+  document.getElementById('auto-box').classList.remove('on');
+  if(ws){ws.close();ws=null;}
+  if(wsReconnectTimer){clearTimeout(wsReconnectTimer);wsReconnectTimer=null;}
+  stopCd();
+  document.getElementById('live-dot').style.background='var(--text-dim)';
+  document.getElementById('live-label').textContent='MANUAL · HTTP';
+}
+
+function reconnect(){
+  prevRsi=null;
+  if(document.getElementById('chk-auto').checked) connectWS();
+  else loadHttp();
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────
 function updateNotifBtn(){
   const btn=document.getElementById('btn-notif');
   if(!('Notification' in window)){btn.style.display='none';return;}
@@ -617,43 +678,30 @@ function updateNotifBtn(){
 window.addEventListener('DOMContentLoaded',()=>{
   initMainChart();
   updateNotifBtn();
+
   document.getElementById('btn-notif').addEventListener('click',()=>{
     if(!('Notification' in window))return;
     if(Notification.permission==='granted'){
-      // toggle off by setting prevRsi null — can't revoke programmatically, just inform
       alert('通知已开启。如需关闭，请在浏览器设置中撤销此网站的通知权限。');
     } else {
       Notification.requestPermission().then(updateNotifBtn);
     }
   });
 
-  document.getElementById('btn-load').addEventListener('click',()=>{
-    loadData();
-    if(document.getElementById('chk-auto').checked)startAuto();
+  document.getElementById('btn-load').addEventListener('click',()=>reconnect());
+
+  ['sel-interval','sel-limit'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',()=>reconnect());
   });
 
-  // auto-load on interval/limit change
-  ['sel-interval','sel-limit'].forEach(id=>{
-    document.getElementById(id).addEventListener('change',()=>{
-      loadData();
-      if(document.getElementById('chk-auto').checked)startAuto();
-    });
-  });
-  // symbol: load on Enter key or when selecting from datalist
   const symEl=document.getElementById('sel-symbol');
-  symEl.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){loadData();if(document.getElementById('chk-auto').checked)startAuto();}
-  });
-  symEl.addEventListener('change',()=>{
-    prevRsi=null;
-    loadData();if(document.getElementById('chk-auto').checked)startAuto();
-  });
+  symEl.addEventListener('keydown',e=>{if(e.key==='Enter')reconnect();});
+  symEl.addEventListener('change',()=>reconnect());
 
   document.getElementById('chk-auto').addEventListener('change',e=>{
     e.target.checked?startAuto():stopAuto();
   });
 
-  loadData();
   startAuto();
 });
 </script>
