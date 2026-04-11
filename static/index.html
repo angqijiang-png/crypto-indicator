@@ -131,6 +131,61 @@
   .overlay-text { color:var(--text-dim); font-size:11px; letter-spacing:2px; }
   .error-box { color:var(--red); border:1px solid var(--red); padding:10px 20px; font-size:11px; display:none; }
   .last-update { font-size:9px; color:var(--text-dim); margin-top:8px; }
+
+  /* ── Mobile ─────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    body { font-size: 11px; }
+
+    header { padding: 8px 12px; }
+    .logo-text { font-size: 12px; letter-spacing: 1px; }
+    .logo-sub { display: none; }
+    #btn-notif { font-size: 9px; padding: 3px 7px; }
+
+    .controls { padding: 8px 12px; gap: 6px; }
+    .ctrl-label { display: none; }
+    #sel-symbol { width: 110px; }
+
+    .price-bar { padding: 8px 12px; gap: 8px 12px; }
+    .price-value { font-size: 18px; }
+    .price-stat { font-size: 9px; }
+
+    /* Stack layout: charts top, side panel bottom */
+    .layout {
+      display: block;
+      height: auto;
+      overflow: visible;
+    }
+    .charts-col {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      height: auto;
+    }
+    /* Fixed heights for each chart panel on mobile */
+    .panel[style*="52%"]  { flex: none !important; height: 300px; }
+    .panel[style*="24%"]  { flex: none !important; height: 180px; }
+
+    .side-panel {
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 10px;
+      gap: 10px;
+      overflow-y: visible;
+    }
+    .side-section { flex: 1 1 calc(50% - 10px); min-width: 140px; }
+
+    /* Hide legend items that overflow on small screens */
+    .legend { gap: 8px; flex-wrap: wrap; }
+    .legend-item { font-size: 9px; }
+
+    .panel-header { padding: 5px 10px; }
+  }
+
+  @media (max-width: 480px) {
+    .side-section { flex: 1 1 100%; }
+    .panel[style*="52%"]  { height: 260px; }
+    .panel[style*="24%"]  { height: 160px; }
+    select, input[list], button { font-size: 10px; padding: 4px 8px; }
+  }
 </style>
 </head>
 <body>
