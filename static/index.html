@@ -149,6 +149,7 @@
     </div>
   </div>
   <div class="header-right">
+    <button id="btn-notif" style="font-size:10px;padding:4px 10px;border-color:var(--text-muted);color:var(--text-dim)" title="点击开启 RSI 超买/超卖通知">🔔 ALERTS</button>
     <div class="live-dot"></div>
     <div class="live-label">LIVE · BINANCE</div>
   </div>
@@ -311,6 +312,37 @@ let rsiChart = null, macdChart = null;
 let cdTimer = null, cdSec = 0;
 let firstLoad = true;
 const INTERVAL = 30;
+
+// RSI alert state — track last known RSI to detect crossings
+let prevRsi = null;
+
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+
+function checkRsiAlert(symbol, rsiV){
+  if(prevRsi===null||rsiV===null||isNaN(rsiV)){prevRsi=rsiV;return;}
+  const canNotify=()=>'Notification' in window && Notification.permission==='granted';
+  if(prevRsi<70 && rsiV>=70 && canNotify()){
+    new Notification(`⚠ RSI 超买 ${symbol}`,{
+      body:`RSI(14) 突破 70，当前 ${rsiV.toFixed(1)} — 警惕回调`,
+      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23060810"/><polygon points="16,4 28,28 4,28" fill="%23ff4466"/></svg>',
+      tag:'rsi-ob',
+      silent:false,
+    });
+  }
+  if(prevRsi>30 && rsiV<=30 && canNotify()){
+    new Notification(`📢 RSI 超卖 ${symbol}`,{
+      body:`RSI(14) 跌破 30，当前 ${rsiV.toFixed(1)} — 可能反弹`,
+      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23060810"/><polygon points="16,28 28,4 4,4" fill="%2300ff88"/></svg>',
+      tag:'rsi-os',
+      silent:false,
+    });
+  }
+  prevRsi=rsiV;
+}
 
 const NAMES = {
   BTCUSDT:'Bitcoin',ETHUSDT:'Ethereum',SOLUSDT:'Solana',BNBUSDT:'BNB',
@@ -479,6 +511,7 @@ function renderAll(d){
   document.getElementById('s-ma5').textContent=fmt(ma5v);
   document.getElementById('s-ma20').textContent=fmt(ma20v);
   document.getElementById('s-rsi').textContent=fmt(rsiV);
+  checkRsiAlert(d.symbol, rsiV);
   document.getElementById('s-dif').textContent=fmt(difV,4);
   document.getElementById('s-dea').textContent=fmt(deaV,4);
   document.getElementById('s-hist').textContent=fmt(histV,4);
@@ -517,8 +550,27 @@ function stopAuto(){
 }
 function updCd(){document.getElementById('cd').textContent=cdSec+'s';}
 
+function updateNotifBtn(){
+  const btn=document.getElementById('btn-notif');
+  if(!('Notification' in window)){btn.style.display='none';return;}
+  const p=Notification.permission;
+  if(p==='granted'){btn.textContent='🔔 ON';btn.style.color='var(--green)';btn.style.borderColor='var(--green-dim)';}
+  else if(p==='denied'){btn.textContent='🔕 BLOCKED';btn.style.color='var(--red)';btn.style.borderColor='var(--red)';}
+  else{btn.textContent='🔔 ALERTS';btn.style.color='var(--text-dim)';btn.style.borderColor='var(--text-muted)';}
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   initMainChart();
+  updateNotifBtn();
+  document.getElementById('btn-notif').addEventListener('click',()=>{
+    if(!('Notification' in window))return;
+    if(Notification.permission==='granted'){
+      // toggle off by setting prevRsi null — can't revoke programmatically, just inform
+      alert('通知已开启。如需关闭，请在浏览器设置中撤销此网站的通知权限。');
+    } else {
+      Notification.requestPermission().then(updateNotifBtn);
+    }
+  });
 
   document.getElementById('btn-load').addEventListener('click',()=>{
     loadData();
@@ -538,6 +590,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(e.key==='Enter'){loadData();if(document.getElementById('chk-auto').checked)startAuto();}
   });
   symEl.addEventListener('change',()=>{
+    prevRsi=null;
     loadData();if(document.getElementById('chk-auto').checked)startAuto();
   });
 
