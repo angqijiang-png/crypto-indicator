@@ -54,12 +54,14 @@
     padding:10px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
   .ctrl-label { color:var(--text-dim); font-size:10px; letter-spacing:1px; text-transform:uppercase; }
-  select, button {
+  select, input[list], button {
     background:var(--surface); border:1px solid var(--border); color:var(--text);
     font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 10px; cursor:pointer; outline:none;
     transition: border-color .15s, color .15s;
   }
-  select:hover, select:focus { border-color:var(--green); color:var(--green); }
+  select:hover, select:focus,
+  input[list]:hover, input[list]:focus { border-color:var(--green); color:var(--green); }
+  input[list]::placeholder { color:var(--text-muted); text-transform:none; }
   button { border-color:var(--green-dim); color:var(--green); letter-spacing:1px; padding:5px 16px; }
   button:hover { background:var(--green); color:var(--bg); }
   button:disabled { opacity:.4; cursor:not-allowed; background:var(--surface); color:var(--text-dim); }
@@ -154,7 +156,11 @@
 
 <div class="controls">
   <span class="ctrl-label">SYMBOL 币种</span>
-  <select id="sel-symbol">
+  <input id="sel-symbol" list="symbol-list" value="BTCUSDT"
+    placeholder="e.g. BTCUSDT"
+    style="width:130px;text-transform:uppercase"
+    autocomplete="off" spellcheck="false">
+  <datalist id="symbol-list">
     <option value="BTCUSDT">BTC/USDT</option>
     <option value="ETHUSDT">ETH/USDT</option>
     <option value="SOLUSDT">SOL/USDT</option>
@@ -163,7 +169,20 @@
     <option value="DOGEUSDT">DOGE/USDT</option>
     <option value="ADAUSDT">ADA/USDT</option>
     <option value="AVAXUSDT">AVAX/USDT</option>
-  </select>
+    <option value="WIFUSDT">WIF/USDT</option>
+    <option value="PEPEUSDT">PEPE/USDT</option>
+    <option value="SHIBUSDT">SHIB/USDT</option>
+    <option value="SUIUSDT">SUI/USDT</option>
+    <option value="TONUSDT">TON/USDT</option>
+    <option value="TRXUSDT">TRX/USDT</option>
+    <option value="DOTUSDT">DOT/USDT</option>
+    <option value="LINKUSDT">LINK/USDT</option>
+    <option value="LTCUSDT">LTC/USDT</option>
+    <option value="UNIUSDT">UNI/USDT</option>
+    <option value="APTUSDT">APT/USDT</option>
+    <option value="ARBUSDT">ARB/USDT</option>
+    <option value="OPUSDT">OP/USDT</option>
+  </datalist>
   <span class="sep">/</span>
   <span class="ctrl-label">INTERVAL 周期</span>
   <select id="sel-interval">
@@ -336,7 +355,10 @@ function initMainChart(){
 }
 
 async function loadData(){
-  const symbol=document.getElementById('sel-symbol').value;
+  const symbolRaw=document.getElementById('sel-symbol').value.trim().toUpperCase();
+  const symbol=symbolRaw||'BTCUSDT';
+  document.getElementById('sel-symbol').value=symbol;
+  if(!/^[A-Z0-9]{3,12}$/.test(symbol)){showError('Invalid symbol: use format like BTCUSDT');return;}
   const interval=document.getElementById('sel-interval').value;
   const limit=document.getElementById('sel-limit').value;
   const btn=document.getElementById('btn-load');
@@ -503,12 +525,20 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(document.getElementById('chk-auto').checked)startAuto();
   });
 
-  // FIX: auto-load on any dropdown change
-  ['sel-symbol','sel-interval','sel-limit'].forEach(id=>{
+  // auto-load on interval/limit change
+  ['sel-interval','sel-limit'].forEach(id=>{
     document.getElementById(id).addEventListener('change',()=>{
       loadData();
       if(document.getElementById('chk-auto').checked)startAuto();
     });
+  });
+  // symbol: load on Enter key or when selecting from datalist
+  const symEl=document.getElementById('sel-symbol');
+  symEl.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){loadData();if(document.getElementById('chk-auto').checked)startAuto();}
+  });
+  symEl.addEventListener('change',()=>{
+    loadData();if(document.getElementById('chk-auto').checked)startAuto();
   });
 
   document.getElementById('chk-auto').addEventListener('change',e=>{
