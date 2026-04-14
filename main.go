@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"crypto-indicator/cache"
 	"crypto-indicator/calculator"
 	"crypto-indicator/fetcher"
 )
+
+var dataCache = cache.New(30 * time.Second)
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, `{"code":200,"message":"ok"}`)
@@ -34,6 +38,9 @@ func klineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indicatorHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
 	symbol := r.URL.Query().Get("symbol")
 	interval := r.URL.Query().Get("interval")
 	if symbol == "" {
@@ -41,6 +48,14 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if interval == "" {
 		interval = "1d"
+	}
+
+	cacheKey := symbol + ":" + interval
+
+	// Cache hit — return immediately
+	if cached, ok := dataCache.Get(cacheKey); ok {
+		json.NewEncoder(w).Encode(cached)
+		return
 	}
 
 	klines, err := fetcher.FetchKlines(symbol, interval, 100)
@@ -54,17 +69,54 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 		closes[i] = k.Close
 	}
 
-	result := map[string]interface{}{
-		"symbol":   symbol,
-		"interval": interval,
-		"klines":   klines,
-		"ma5":      calculator.MA(closes, 5),
-		"ma20":     calculator.MA(closes, 20),
-		"rsi14":    calculator.RSI(closes, 14),
-		"macd":     calculator.MACD(closes, 12, 26, 9),
+	ma5 := calculator.MA(closes, 5)
+	ma20 := calculator.MA(closes, 20)
+	rsi := calculator.RSI(closes, 14)
+	macdResult := calculator.MACD(closes, 12, 26, 9)
+	bollinger := calculator.CalcBollingerBands(klines, 20, 2.0)
+	atr := calculator.CalcATR(klines, 14)
+	kdj := calculator.CalcKDJ(klines, 9)
+	volData := calculator.CalcVolumeMA(klines, 20)
+	obv := calculator.CalcOBV(klines)
+
+	// Signal score for the last candle
+	var signal calculator.SignalScore
+	if len(closes) > 0 {
+		signal = calculator.CalcSignalScore(
+			closes,
+			ma5,
+			ma20,
+			rsi,
+			macdResult.MACD, // histogram
+			bollinger,
+			kdj,
+			atr,
+			volData,
+			len(closes)-1,
+		)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	result := map[string]interface{}{
+		"klines": klines,
+		"indicators": map[string]interface{}{
+			"ma5":  ma5,
+			"ma20": ma20,
+			"rsi":  rsi,
+			"macd": map[string]interface{}{
+				"macd_line":   macdResult.DIF,
+				"signal_line": macdResult.DEA,
+				"histogram":   macdResult.MACD,
+			},
+			"bollinger":   bollinger,
+			"atr":         atr,
+			"kdj":         kdj,
+			"volume_data": volData,
+			"obv":         obv,
+			"signal":      signal,
+		},
+	}
+
+	dataCache.Set(cacheKey, result)
 	json.NewEncoder(w).Encode(result)
 }
 

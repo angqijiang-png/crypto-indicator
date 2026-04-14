@@ -9,11 +9,22 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"crypto-indicator/calculator"
 	"crypto-indicator/fetcher"
 )
+
+// parseLimit reads the "limit" query param; defaults to 100.
+func parseLimit(r *http.Request) int {
+	if s := r.URL.Query().Get("limit"); s != "" {
+		if n, err := strconv.Atoi(s); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 100
+}
 
 const wsGUID         = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 const wsPushInterval = 30 * time.Second
