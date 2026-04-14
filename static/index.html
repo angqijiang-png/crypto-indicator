@@ -54,14 +54,12 @@
     padding:10px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
   .ctrl-label { color:var(--text-dim); font-size:10px; letter-spacing:1px; text-transform:uppercase; }
-  select, input[list], button {
+  select, button {
     background:var(--surface); border:1px solid var(--border); color:var(--text);
     font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 10px; cursor:pointer; outline:none;
     transition: border-color .15s, color .15s;
   }
-  select:hover, select:focus,
-  input[list]:hover, input[list]:focus { border-color:var(--green); color:var(--green); }
-  input[list]::placeholder { color:var(--text-muted); text-transform:none; }
+  select:hover, select:focus { border-color:var(--green); color:var(--green); }
   button { border-color:var(--green-dim); color:var(--green); letter-spacing:1px; padding:5px 16px; }
   button:hover { background:var(--green); color:var(--bg); }
   button:disabled { opacity:.4; cursor:not-allowed; background:var(--surface); color:var(--text-dim); }
@@ -131,61 +129,6 @@
   .overlay-text { color:var(--text-dim); font-size:11px; letter-spacing:2px; }
   .error-box { color:var(--red); border:1px solid var(--red); padding:10px 20px; font-size:11px; display:none; }
   .last-update { font-size:9px; color:var(--text-dim); margin-top:8px; }
-
-  /* ── Mobile ─────────────────────────────────────────────── */
-  @media (max-width: 768px) {
-    body { font-size: 11px; }
-
-    header { padding: 8px 12px; }
-    .logo-text { font-size: 12px; letter-spacing: 1px; }
-    .logo-sub { display: none; }
-    #btn-notif { font-size: 9px; padding: 3px 7px; }
-
-    .controls { padding: 8px 12px; gap: 6px; }
-    .ctrl-label { display: none; }
-    #sel-symbol { width: 110px; }
-
-    .price-bar { padding: 8px 12px; gap: 8px 12px; }
-    .price-value { font-size: 18px; }
-    .price-stat { font-size: 9px; }
-
-    /* Stack layout: charts top, side panel bottom */
-    .layout {
-      display: block;
-      height: auto;
-      overflow: visible;
-    }
-    .charts-col {
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      height: auto;
-    }
-    /* Fixed heights for each chart panel on mobile */
-    .panel[style*="52%"]  { flex: none !important; height: 300px; }
-    .panel[style*="24%"]  { flex: none !important; height: 180px; }
-
-    .side-panel {
-      flex-direction: row;
-      flex-wrap: wrap;
-      padding: 10px;
-      gap: 10px;
-      overflow-y: visible;
-    }
-    .side-section { flex: 1 1 calc(50% - 10px); min-width: 140px; }
-
-    /* Hide legend items that overflow on small screens */
-    .legend { gap: 8px; flex-wrap: wrap; }
-    .legend-item { font-size: 9px; }
-
-    .panel-header { padding: 5px 10px; }
-  }
-
-  @media (max-width: 480px) {
-    .side-section { flex: 1 1 100%; }
-    .panel[style*="52%"]  { height: 260px; }
-    .panel[style*="24%"]  { height: 160px; }
-    select, input[list], button { font-size: 10px; padding: 4px 8px; }
-  }
 </style>
 </head>
 <body>
@@ -204,19 +147,14 @@
     </div>
   </div>
   <div class="header-right">
-    <button id="btn-notif" style="font-size:10px;padding:4px 10px;border-color:var(--text-muted);color:var(--text-dim)" title="点击开启 RSI 超买/超卖通知">🔔 ALERTS</button>
-    <div class="live-dot" id="live-dot"></div>
-    <div class="live-label" id="live-label">CONNECTING...</div>
+    <div class="live-dot"></div>
+    <div class="live-label">LIVE · BINANCE</div>
   </div>
 </header>
 
 <div class="controls">
   <span class="ctrl-label">SYMBOL 币种</span>
-  <input id="sel-symbol" list="symbol-list" value="BTCUSDT"
-    placeholder="e.g. BTCUSDT"
-    style="width:130px;text-transform:uppercase"
-    autocomplete="off" spellcheck="false">
-  <datalist id="symbol-list">
+  <select id="sel-symbol">
     <option value="BTCUSDT">BTC/USDT</option>
     <option value="ETHUSDT">ETH/USDT</option>
     <option value="SOLUSDT">SOL/USDT</option>
@@ -225,20 +163,7 @@
     <option value="DOGEUSDT">DOGE/USDT</option>
     <option value="ADAUSDT">ADA/USDT</option>
     <option value="AVAXUSDT">AVAX/USDT</option>
-    <option value="WIFUSDT">WIF/USDT</option>
-    <option value="PEPEUSDT">PEPE/USDT</option>
-    <option value="SHIBUSDT">SHIB/USDT</option>
-    <option value="SUIUSDT">SUI/USDT</option>
-    <option value="TONUSDT">TON/USDT</option>
-    <option value="TRXUSDT">TRX/USDT</option>
-    <option value="DOTUSDT">DOT/USDT</option>
-    <option value="LINKUSDT">LINK/USDT</option>
-    <option value="LTCUSDT">LTC/USDT</option>
-    <option value="UNIUSDT">UNI/USDT</option>
-    <option value="APTUSDT">APT/USDT</option>
-    <option value="ARBUSDT">ARB/USDT</option>
-    <option value="OPUSDT">OP/USDT</option>
-  </datalist>
+  </select>
   <span class="sep">/</span>
   <span class="ctrl-label">INTERVAL 周期</span>
   <select id="sel-interval">
@@ -284,7 +209,6 @@
         <div class="legend">
           <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>MA5</div>
           <div class="legend-item"><div class="legend-dot" style="background:#4488ff"></div>MA20</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#cc44ff"></div>BB(20,2)</div>
         </div>
       </div>
       <div class="chart-body"><div id="main-chart-container"></div></div>
@@ -331,8 +255,6 @@
       <div class="indicator-row"><div class="ind-name">MA5</div><div class="ind-value" id="s-ma5">—</div><div class="ind-signal" id="sig-ma5">—</div></div>
       <div class="indicator-row"><div class="ind-name">MA20</div><div class="ind-value" id="s-ma20">—</div><div class="ind-signal" id="sig-ma20">—</div></div>
       <div class="indicator-row"><div class="ind-name">RSI(14)</div><div class="ind-value" id="s-rsi">—</div><div class="ind-signal" id="sig-rsi">—</div></div>
-      <div class="indicator-row"><div class="ind-name">BB Upper</div><div class="ind-value" id="s-bbu">—</div><div class="ind-signal" id="sig-bb">—</div></div>
-      <div class="indicator-row"><div class="ind-name">BB Lower</div><div class="ind-value" id="s-bbl">—</div><div style="width:50px"></div></div>
       <div class="indicator-row"><div class="ind-name">MACD DIF</div><div class="ind-value" id="s-dif">—</div><div class="ind-signal" id="sig-dif">—</div></div>
       <div class="indicator-row"><div class="ind-name">MACD DEA</div><div class="ind-value" id="s-dea">—</div><div class="ind-signal" id="sig-dea">—</div></div>
       <div class="indicator-row"><div class="ind-name">HISTOGRAM 直方图</div><div class="ind-value" id="s-hist">—</div><div class="ind-signal" id="sig-hist">—</div></div>
@@ -362,43 +284,11 @@
 </div>
 
 <script>
-let mainChart, candleSeries, ma5Series, ma20Series, bbUpperSeries, bbMidSeries, bbLowerSeries;
+let mainChart, candleSeries, ma5Series, ma20Series;
 let rsiChart = null, macdChart = null;
 let cdTimer = null, cdSec = 0;
 let firstLoad = true;
-const PUSH_INTERVAL = 30;
-let ws = null, wsReconnectTimer = null;
-
-// RSI alert state — track last known RSI to detect crossings
-let prevRsi = null;
-
-function requestNotifPermission(){
-  if('Notification' in window && Notification.permission==='default'){
-    Notification.requestPermission();
-  }
-}
-
-function checkRsiAlert(symbol, rsiV){
-  if(prevRsi===null||rsiV===null||isNaN(rsiV)){prevRsi=rsiV;return;}
-  const canNotify=()=>'Notification' in window && Notification.permission==='granted';
-  if(prevRsi<70 && rsiV>=70 && canNotify()){
-    new Notification(`⚠ RSI 超买 ${symbol}`,{
-      body:`RSI(14) 突破 70，当前 ${rsiV.toFixed(1)} — 警惕回调`,
-      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23060810"/><polygon points="16,4 28,28 4,28" fill="%23ff4466"/></svg>',
-      tag:'rsi-ob',
-      silent:false,
-    });
-  }
-  if(prevRsi>30 && rsiV<=30 && canNotify()){
-    new Notification(`📢 RSI 超卖 ${symbol}`,{
-      body:`RSI(14) 跌破 30，当前 ${rsiV.toFixed(1)} — 可能反弹`,
-      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23060810"/><polygon points="16,28 28,4 4,4" fill="%2300ff88"/></svg>',
-      tag:'rsi-os',
-      silent:false,
-    });
-  }
-  prevRsi=rsiV;
-}
+const INTERVAL = 30;
 
 const NAMES = {
   BTCUSDT:'Bitcoin',ETHUSDT:'Ethereum',SOLUSDT:'Solana',BNBUSDT:'BNB',
@@ -436,68 +326,23 @@ function initMainChart(){
   candleSeries=mainChart.addCandlestickSeries({upColor:'#00ff88',downColor:'#ff4466',borderUpColor:'#00ff88',borderDownColor:'#ff4466',wickUpColor:'#00cc66',wickDownColor:'#cc3355'});
   ma5Series=mainChart.addLineSeries({color:'#ffaa00',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
   ma20Series=mainChart.addLineSeries({color:'#4488ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
-  bbUpperSeries=mainChart.addLineSeries({color:'#cc44ff80',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
-  bbMidSeries=mainChart.addLineSeries({color:'#cc44ff50',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
-  bbLowerSeries=mainChart.addLineSeries({color:'#cc44ff80',lineWidth:1,priceLineVisible:false,lastValueVisible:false,lineStyle:2});
   new ResizeObserver(()=>{const r=c.getBoundingClientRect();if(r.width&&r.height)mainChart.applyOptions({width:r.width,height:r.height});}).observe(c);
 }
 
-// ── WebSocket transport ───────────────────────────────────────────────────
-
-function setStatus(state){
-  const dot=document.getElementById('live-dot');
-  const lbl=document.getElementById('live-label');
-  if(state==='live')        {dot.style.background='var(--green)';lbl.textContent='LIVE · WS';}
-  else if(state==='connecting'){dot.style.background='var(--amber)';lbl.textContent='CONNECTING...';}
-  else                      {dot.style.background='var(--red)';  lbl.textContent='DISCONNECTED';}
-}
-
-function getParams(){
-  const sym=document.getElementById('sel-symbol').value.trim().toUpperCase()||'BTCUSDT';
-  document.getElementById('sel-symbol').value=sym;
-  return {symbol:sym, interval:document.getElementById('sel-interval').value, limit:document.getElementById('sel-limit').value};
-}
-
-function connectWS(){
-  if(ws){ws.close();ws=null;}
-  if(wsReconnectTimer){clearTimeout(wsReconnectTimer);wsReconnectTimer=null;}
-  clearError(); setStatus('connecting');
-  const {symbol,interval,limit}=getParams();
-  if(!/^[A-Z0-9]{3,12}$/.test(symbol)){showError('Invalid symbol: use format like BTCUSDT');setStatus('disconnected');return;}
-  const proto=location.protocol==='https:'?'wss:':'ws:';
-  try{ ws=new WebSocket(`${proto}//${location.host}/ws/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`); }
-  catch(e){ setStatus('disconnected'); return; }
-  ws.onopen=()=>setStatus('live');
-  ws.onmessage=e=>{
-    try{
-      const d=JSON.parse(e.data);
-      if(d.error) throw new Error(d.error);
-      renderAll(d);
-      document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
-      if(firstLoad){document.getElementById('overlay').classList.add('hidden');firstLoad=false;}
-      resetCd();
-    }catch(err){showError(err.message);console.error(err);}
-  };
-  ws.onerror=()=>setStatus('disconnected');
-  ws.onclose=()=>{
-    ws=null; setStatus('disconnected');
-    if(document.getElementById('chk-auto').checked)
-      wsReconnectTimer=setTimeout(connectWS,5000);
-  };
-}
-
-// HTTP fallback (used when AUTO is off and user clicks LOAD)
-async function loadHttp(){
-  const {symbol,interval,limit}=getParams();
-  if(!/^[A-Z0-9]{3,12}$/.test(symbol)){showError('Invalid symbol: use format like BTCUSDT');return;}
+async function loadData(){
+  const symbol=document.getElementById('sel-symbol').value;
+  const interval=document.getElementById('sel-interval').value;
+  const limit=document.getElementById('sel-limit').value;
   const btn=document.getElementById('btn-load');
   btn.disabled=true; clearError();
-  if(firstLoad)document.getElementById('overlay').classList.remove('hidden');
+  if(firstLoad) document.getElementById('overlay').classList.remove('hidden');
+
   try{
-    const res=await fetch(`/api/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const res=await fetch(`/api/indicator?symbol=${symbol}&interval=${interval}&limit=${limit}&_t=${Date.now()}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const d=await res.json();
-    if(d.error)throw new Error(d.error);
+    if(d.error) throw new Error(d.error);
+    console.log(`[${d.symbol}] close=${d.klines[d.klines.length-1]?.close} rsi=${d.rsi14[d.rsi14.length-1]?.toFixed(2)} dif=${d.macd.dif[d.macd.dif.length-1]?.toFixed(4)}`);
     renderAll(d);
     document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
   }catch(e){showError(e.message);console.error(e);}
@@ -530,16 +375,15 @@ function renderAll(d){
   candleSeries.setData(klines.map(k=>({time:toT(k.open_time),open:k.open,high:k.high,low:k.low,close:k.close})));
   ma5Series.setData(d.ma5.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
   ma20Series.setData(d.ma20.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
-  if(d.bb20){
-    bbUpperSeries.setData(d.bb20.upper.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
-    bbMidSeries.setData(d.bb20.mid.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
-    bbLowerSeries.setData(d.bb20.lower.map((v,i)=>v>0?{time:toT(klines[i].open_time),value:v}:null).filter(Boolean));
-  }
   mainChart.timeScale().fitContent();
 
   // Sub chart labels - with proper time formatting based on interval
   const sub=Math.min(n,80);
   const labels=klines.slice(-sub).map(k=>fmtLabel(k.open_time,iv));
+
+  // Update panel titles with current symbol
+  document.querySelectorAll('.panel-title')[1].textContent=`RSI(14) · ${d.symbol}`;
+  document.querySelectorAll('.panel-title')[2].textContent=`MACD(12,26,9) · ${d.symbol}`;
 
   // RSI - replace canvas to avoid Chart.js residual pixels
   if(rsiChart){rsiChart.destroy();rsiChart=null;}
@@ -595,19 +439,14 @@ function renderAll(d){
   // Side panel
   const ma5v=d.ma5[n-1],ma20v=d.ma20[n-1],rsiV=d.rsi14[n-1];
   const difV=d.macd.dif[n-1],deaV=d.macd.dea[n-1],histV=d.macd.macd[n-1];
-  const bbuV=d.bb20?d.bb20.upper[n-1]:null,bblV=d.bb20?d.bb20.lower[n-1]:null;
   document.getElementById('s-open').textContent=fmt(last.open);
   document.getElementById('s-high').textContent=fmt(last.high);
   document.getElementById('s-low').textContent=fmt(last.low);
   document.getElementById('s-close').textContent=fmt(last.close);
   document.getElementById('s-vol').textContent=fmtVol(last.volume);
-  document.getElementById('s-bbu').textContent=fmt(bbuV);
-  document.getElementById('s-bbl').textContent=fmt(bblV);
-  if(bbuV&&bblV) setSignal(document.getElementById('sig-bb'),last.close>bbuV?'bear':last.close<bblV?'bull':'neut');
   document.getElementById('s-ma5').textContent=fmt(ma5v);
   document.getElementById('s-ma20').textContent=fmt(ma20v);
   document.getElementById('s-rsi').textContent=fmt(rsiV);
-  checkRsiAlert(d.symbol, rsiV);
   document.getElementById('s-dif').textContent=fmt(difV,4);
   document.getElementById('s-dea').textContent=fmt(deaV,4);
   document.getElementById('s-hist').textContent=fmt(histV,4);
@@ -633,75 +472,40 @@ function renderAll(d){
   }
 }
 
-// ── Countdown (resets each time server pushes) ───────────────────────────
-function resetCd(){
-  if(cdTimer)clearInterval(cdTimer);
-  cdSec=PUSH_INTERVAL; updCd();
-  cdTimer=setInterval(()=>{cdSec--;updCd();if(cdSec<=0)clearInterval(cdTimer);},1000);
+// Auto refresh
+function startAuto(){
+  stopAuto(); cdSec=INTERVAL; updCd();
+  cdTimer=setInterval(()=>{cdSec--;updCd();if(cdSec<=0){loadData();cdSec=INTERVAL;}},1000);
+  document.getElementById('auto-box').classList.add('on');
 }
-function stopCd(){
-  if(cdTimer){clearInterval(cdTimer);cdTimer=null;}
+function stopAuto(){
+  if(cdTimer)clearInterval(cdTimer);cdTimer=null;
   document.getElementById('cd').textContent='';
+  document.getElementById('auto-box').classList.remove('on');
 }
 function updCd(){document.getElementById('cd').textContent=cdSec+'s';}
 
-// ── Auto / Manual mode ────────────────────────────────────────────────────
-function startAuto(){
-  document.getElementById('auto-box').classList.add('on');
-  connectWS();
-}
-function stopAuto(){
-  document.getElementById('auto-box').classList.remove('on');
-  if(ws){ws.close();ws=null;}
-  if(wsReconnectTimer){clearTimeout(wsReconnectTimer);wsReconnectTimer=null;}
-  stopCd();
-  document.getElementById('live-dot').style.background='var(--text-dim)';
-  document.getElementById('live-label').textContent='MANUAL · HTTP';
-}
-
-function reconnect(){
-  prevRsi=null;
-  if(document.getElementById('chk-auto').checked) connectWS();
-  else loadHttp();
-}
-
-// ── Notifications ─────────────────────────────────────────────────────────
-function updateNotifBtn(){
-  const btn=document.getElementById('btn-notif');
-  if(!('Notification' in window)){btn.style.display='none';return;}
-  const p=Notification.permission;
-  if(p==='granted'){btn.textContent='🔔 ON';btn.style.color='var(--green)';btn.style.borderColor='var(--green-dim)';}
-  else if(p==='denied'){btn.textContent='🔕 BLOCKED';btn.style.color='var(--red)';btn.style.borderColor='var(--red)';}
-  else{btn.textContent='🔔 ALERTS';btn.style.color='var(--text-dim)';btn.style.borderColor='var(--text-muted)';}
-}
-
 window.addEventListener('DOMContentLoaded',()=>{
   initMainChart();
-  updateNotifBtn();
 
-  document.getElementById('btn-notif').addEventListener('click',()=>{
-    if(!('Notification' in window))return;
-    if(Notification.permission==='granted'){
-      alert('通知已开启。如需关闭，请在浏览器设置中撤销此网站的通知权限。');
-    } else {
-      Notification.requestPermission().then(updateNotifBtn);
-    }
+  document.getElementById('btn-load').addEventListener('click',()=>{
+    loadData();
+    if(document.getElementById('chk-auto').checked)startAuto();
   });
 
-  document.getElementById('btn-load').addEventListener('click',()=>reconnect());
-
-  ['sel-interval','sel-limit'].forEach(id=>{
-    document.getElementById(id).addEventListener('change',()=>reconnect());
+  // FIX: auto-load on any dropdown change
+  ['sel-symbol','sel-interval','sel-limit'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',()=>{
+      loadData();
+      if(document.getElementById('chk-auto').checked)startAuto();
+    });
   });
-
-  const symEl=document.getElementById('sel-symbol');
-  symEl.addEventListener('keydown',e=>{if(e.key==='Enter')reconnect();});
-  symEl.addEventListener('change',()=>reconnect());
 
   document.getElementById('chk-auto').addEventListener('change',e=>{
     e.target.checked?startAuto():stopAuto();
   });
 
+  loadData();
   startAuto();
 });
 </script>
