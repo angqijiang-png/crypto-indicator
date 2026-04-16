@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRYPTO-INDICATOR</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="/lightweight-charts.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -47,12 +44,19 @@ html,body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',san
 
 /* control bar */
 .ctrl{display:flex;align-items:center;padding:7px 18px;background:var(--bg-card);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
-.btn-grp{display:flex;gap:3px}
+.btn-grp{display:flex;gap:3px;flex-wrap:wrap}
 .btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;padding:4px 9px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:4px;cursor:pointer;transition:all .15s;letter-spacing:.05em}
 .btn:hover{border-color:var(--amber);color:var(--amber)}
 .btn.active{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
-.sep{width:1px;height:18px;background:var(--border)}
+.btn.sm{font-size:10px;padding:3px 6px}
+.sep{width:1px;align-self:stretch;background:var(--border)}
 .status{display:flex;align-items:center;gap:6px;margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+#sym-rows{display:flex;flex-direction:column;gap:4px}
+.sym-row{display:flex;align-items:center;gap:6px}
+.row-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);min-width:42px;letter-spacing:.06em;flex-shrink:0}
+#custom-sym{background:var(--bg-card2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 7px;border-radius:4px;width:80px;outline:none;margin-left:4px}
+#custom-sym::placeholder{color:var(--muted)}
+#custom-sym:focus{border-color:var(--amber)}
 .dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
 
@@ -64,7 +68,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',san
 .clabel{position:absolute;top:5px;left:7px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:rgba(10,14,23,.75);padding:2px 5px;border-radius:3px;z-index:10;pointer-events:none;letter-spacing:.04em}
 
 /* info panel */
-.info{width:280px;min-width:280px;padding:10px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;max-height:calc(100vh - 90px)}
+.info{width:300px;min-width:300px;padding:10px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;max-height:calc(100vh - 90px)}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:11px}
 .ctitle{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;display:flex;align-items:center;gap:5px}
 .ctitle::before{content:'';display:block;width:3px;height:11px;background:var(--amber);border-radius:2px}
@@ -82,7 +86,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',san
 .bfill{position:absolute;top:0;height:100%;border-radius:3px;transition:width .3s}
 .bfill.pos{left:50%;background:var(--green)}
 .bfill.neg{right:50%;background:var(--red)}
-.bval{font-family:'JetBrains Mono',monospace;font-size:10px;width:30px;text-align:right;flex-shrink:0}
+.bval{font-family:'JetBrains Mono',monospace;font-size:10px;min-width:45px;text-align:right;flex-shrink:0}
 
 /* key indicators */
 .ki-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
@@ -144,15 +148,38 @@ footer a:hover{text-decoration:underline}
 </header>
 
 <div class="ctrl">
-  <div class="btn-grp" id="sym-grp">
-    <button class="btn active" data-s="BTC">BTC</button>
-    <button class="btn" data-s="ETH">ETH</button>
-    <button class="btn" data-s="SOL">SOL</button>
-    <button class="btn" data-s="BNB">BNB</button>
-    <button class="btn" data-s="XRP">XRP</button>
-    <button class="btn" data-s="DOGE">DOGE</button>
-    <button class="btn" data-s="ADA">ADA</button>
-    <button class="btn" data-s="AVAX">AVAX</button>
+  <div id="sym-rows">
+    <div class="sym-row">
+      <span class="row-label">MAJOR</span>
+      <div class="btn-grp">
+        <button class="btn active" data-s="BTC">BTC</button>
+        <button class="btn" data-s="ETH">ETH</button>
+        <button class="btn" data-s="SOL">SOL</button>
+        <button class="btn" data-s="BNB">BNB</button>
+        <button class="btn" data-s="XRP">XRP</button>
+        <button class="btn" data-s="DOGE">DOGE</button>
+        <button class="btn" data-s="ADA">ADA</button>
+        <button class="btn" data-s="AVAX">AVAX</button>
+      </div>
+    </div>
+    <div class="sym-row">
+      <span class="row-label">HOT</span>
+      <div class="btn-grp">
+        <button class="btn sm" data-s="TON">TON</button>
+        <button class="btn sm" data-s="DOT">DOT</button>
+        <button class="btn sm" data-s="LINK">LINK</button>
+        <button class="btn sm" data-s="UNI">UNI</button>
+        <button class="btn sm" data-s="LTC">LTC</button>
+        <button class="btn sm" data-s="SUI">SUI</button>
+        <button class="btn sm" data-s="NEAR">NEAR</button>
+        <button class="btn sm" data-s="APT">APT</button>
+        <button class="btn sm" data-s="ARB">ARB</button>
+        <button class="btn sm" data-s="OP">OP</button>
+        <button class="btn sm" data-s="PEPE">PEPE</button>
+        <button class="btn sm" data-s="SHIB">SHIB</button>
+      </div>
+      <input type="text" id="custom-sym" placeholder="CUSTOM" maxlength="20">
+    </div>
   </div>
   <div class="sep"></div>
   <div class="btn-grp" id="itv-grp">
@@ -244,7 +271,12 @@ function mkChart(id, showTime) {
   });
 }
 
-const APP = { sym: 'BTC', itv: '1d', C: {}, S: {}, ready: false, rsiLines: false, timer: null };
+const APP = { sym: 'BTC', itv: '1d', ready: false, rsiLines: false, timer: null };
+
+// Global — must be declared outside all functions for sync to work
+var charts = {};
+var series = {};
+var isSyncing = false;
 
 const $  = id => document.getElementById(id);
 const showOv = () => $('overlay').classList.remove('hidden');
@@ -275,75 +307,85 @@ function fv(n) {
 
 function sec(ms) { return Math.floor(ms / 1000); }
 
-// scalar array → [{time, value}], skipping zeros/nulls
-function ld(klines, arr) {
-  if (!arr) return [];
-  return klines.reduce((out, k, i) => {
-    const v = arr[i];
-    if (v) out.push({ time: sec(k.open_time), value: v });
-    return out;
-  }, []);
+// Skip leading zeros only (MA/RSI/Bollinger/VolMA/MACD line+signal)
+function mapToChart(arr, klines, key) {
+  var out = [];
+  for (var i = 0; i < klines.length && i < arr.length; i++) {
+    var v = key ? (arr[i] ? arr[i][key] : 0) : arr[i];
+    if (out.length === 0 && (v === 0 || v === null || v === undefined)) continue;
+    out.push({ time: sec(klines[i].open_time), value: v });
+  }
+  return out;
 }
 
-// object array → [{time, value}] by key
-function ldo(klines, arr, key) {
-  if (!arr) return [];
-  return klines.reduce((out, k, i) => {
-    const obj = arr[i];
-    if (obj && obj[key]) out.push({ time: sec(k.open_time), value: obj[key] });
-    return out;
-  }, []);
+// Keep all values including zeros (KDJ: initial value is 50, not a leading zero)
+function mapAllToChart(arr, klines, key) {
+  var out = [];
+  for (var i = 0; i < klines.length && i < arr.length; i++) {
+    var v = key ? (arr[i] ? arr[i][key] : 0) : arr[i];
+    out.push({ time: sec(klines[i].open_time), value: v });
+  }
+  return out;
 }
 
 function createCharts() {
-  const C = APP.C, S = APP.S;
+  // Destroy any existing charts before recreating
+  Object.values(charts).forEach(function(c) { if (c) c.remove(); });
+  charts = {};
+  series = {};
+  APP.rsiLines = false;
 
-  C.candle = mkChart('c-candle', false);
-  C.vol    = mkChart('c-vol',    false);
-  C.macd   = mkChart('c-macd',   false);
-  C.rsi    = mkChart('c-rsi',    false);
-  C.kdj    = mkChart('c-kdj',    true);
+  charts.candle = mkChart('c-candle', false);
+  charts.volume = mkChart('c-vol',    false);
+  charts.macd   = mkChart('c-macd',   false);
+  charts.rsi    = mkChart('c-rsi',    false);
+  charts.kdj    = mkChart('c-kdj',    true);
 
   // Candle + overlays
-  S.candle = C.candle.addCandlestickSeries({
+  series.candle = charts.candle.addCandlestickSeries({
     upColor:'#22c55e', downColor:'#ef4444',
     borderUpColor:'#22c55e', borderDownColor:'#ef4444',
     wickUpColor:'#22c55e', wickDownColor:'#ef4444',
   });
-  S.ma5  = C.candle.addLineSeries({ color:'#f59e0b', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  S.ma20 = C.candle.addLineSeries({ color:'#a855f7', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  S.bbU  = C.candle.addLineSeries({ color:'rgba(59,130,246,.55)', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
-  S.bbM  = C.candle.addLineSeries({ color:'rgba(59,130,246,.3)',  lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
-  S.bbL  = C.candle.addLineSeries({ color:'rgba(59,130,246,.55)', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
+  series.ma5  = charts.candle.addLineSeries({ color:'#f59e0b', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.ma20 = charts.candle.addLineSeries({ color:'#a855f7', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.bbU  = charts.candle.addLineSeries({ color:'rgba(59,130,246,.55)', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
+  series.bbM  = charts.candle.addLineSeries({ color:'rgba(59,130,246,.3)',  lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
+  series.bbL  = charts.candle.addLineSeries({ color:'rgba(59,130,246,.55)', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
 
   // Volume
-  S.vol   = C.vol.addHistogramSeries({ priceFormat:{ type:'volume' }, priceLineVisible:false, lastValueVisible:false });
-  S.volMA = C.vol.addLineSeries({ color:'rgba(245,158,11,.8)', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  C.vol.priceScale('right').applyOptions({ scaleMargins:{ top:0.1, bottom:0 } });
+  series.vol   = charts.volume.addHistogramSeries({ priceFormat:{ type:'volume' }, priceLineVisible:false, lastValueVisible:false });
+  series.volMA = charts.volume.addLineSeries({ color:'rgba(245,158,11,.8)', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  charts.volume.priceScale('right').applyOptions({ scaleMargins:{ top:0.1, bottom:0 } });
 
   // MACD
-  S.mHist = C.macd.addHistogramSeries({ priceLineVisible:false, lastValueVisible:false });
-  S.mLine = C.macd.addLineSeries({ color:'#3b82f6', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  S.mSig  = C.macd.addLineSeries({ color:'#ef4444', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.mHist = charts.macd.addHistogramSeries({ priceLineVisible:false, lastValueVisible:false });
+  series.mLine = charts.macd.addLineSeries({ color:'#3b82f6', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.mSig  = charts.macd.addLineSeries({ color:'#ef4444', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
 
   // RSI
-  S.rsi = C.rsi.addLineSeries({ color:'#a855f7', lineWidth:1.5, priceLineVisible:false, lastValueVisible:true });
-  C.rsi.priceScale('right').applyOptions({ scaleMargins:{ top:0.1, bottom:0.1 } });
+  series.rsi = charts.rsi.addLineSeries({ color:'#a855f7', lineWidth:1.5, priceLineVisible:false, lastValueVisible:true });
+  charts.rsi.priceScale('right').applyOptions({ scaleMargins:{ top:0.1, bottom:0.1 } });
 
   // KDJ
-  S.kK = C.kdj.addLineSeries({ color:'#22c55e', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  S.kD = C.kdj.addLineSeries({ color:'#ef4444', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
-  S.kJ = C.kdj.addLineSeries({ color:'#06b6d4', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
+  series.kK = charts.kdj.addLineSeries({ color:'#22c55e', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.kD = charts.kdj.addLineSeries({ color:'#ef4444', lineWidth:1, priceLineVisible:false, lastValueVisible:false });
+  series.kJ = charts.kdj.addLineSeries({ color:'#06b6d4', lineWidth:1, lineStyle:LC.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false });
 
-  // Sync all time scales
-  const charts = Object.values(C);
-  let syncing = false;
-  charts.forEach(ch => {
-    ch.timeScale().subscribeVisibleLogicalRangeChange(r => {
-      if (syncing || !r) return;
-      syncing = true;
-      charts.forEach(other => { if (other !== ch) other.timeScale().setVisibleLogicalRange(r); });
-      syncing = false;
+  // Sync — inline here, re-bound every time charts are recreated
+  var chartList = [charts.candle, charts.volume, charts.macd, charts.rsi, charts.kdj];
+  chartList.forEach(function(srcChart, srcIdx) {
+    if (!srcChart) return;
+    srcChart.timeScale().subscribeVisibleLogicalRangeChange(function(range) {
+      if (isSyncing) return;
+      if (!range || range.from === undefined || range.to === undefined) return;
+      isSyncing = true;
+      chartList.forEach(function(tgtChart, tgtIdx) {
+        if (srcIdx !== tgtIdx && tgtChart) {
+          try { tgtChart.timeScale().setVisibleLogicalRange(range); } catch(e) {}
+        }
+      });
+      isSyncing = false;
     });
   });
 
@@ -351,47 +393,55 @@ function createCharts() {
 }
 
 function updateCharts(klines, ind, fit) {
-  const S = APP.S;
   const t = k => sec(k.open_time);
 
-  S.candle.setData(klines.map(k => ({ time:t(k), open:k.open, high:k.high, low:k.low, close:k.close })));
-  S.ma5.setData(ld(klines, ind.ma5));
-  S.ma20.setData(ld(klines, ind.ma20));
-  S.bbU.setData(ldo(klines, ind.bollinger, 'upper'));
-  S.bbM.setData(ldo(klines, ind.bollinger, 'middle'));
-  S.bbL.setData(ldo(klines, ind.bollinger, 'lower'));
+  series.candle.setData(klines.map(k => ({ time:t(k), open:k.open, high:k.high, low:k.low, close:k.close })));
 
-  S.vol.setData(klines.reduce((out, k, i) => {
-    const vd = ind.volume_data[i];
-    if (vd && vd.volume) out.push({ time:t(k), value:vd.volume, color: k.close >= k.open ? 'rgba(34,197,94,.5)' : 'rgba(239,68,68,.5)' });
-    return out;
-  }, []));
-  S.volMA.setData(ldo(klines, ind.volume_data, 'vol_ma'));
+  // MA (skip leading zeros)
+  series.ma5.setData(mapToChart(ind.ma5, klines));
+  series.ma20.setData(mapToChart(ind.ma20, klines));
 
+  // Bollinger (skip leading zeros in struct)
+  series.bbU.setData(mapToChart(ind.bollinger, klines, 'upper'));
+  series.bbM.setData(mapToChart(ind.bollinger, klines, 'middle'));
+  series.bbL.setData(mapToChart(ind.bollinger, klines, 'lower'));
+
+  // Volume — all 200 points (volume always nonzero; volMA full range for alignment)
+  series.vol.setData(klines.map(k => ({
+    time: t(k), value: k.volume,
+    color: k.close >= k.open ? '#22c55e33' : '#ef444433'
+  })));
+  series.volMA.setData(mapAllToChart(ind.volume_data, klines, 'vol_ma'));
+
+  // MACD — all 200 points so sub-chart aligns with candle chart
   const macd = ind.macd || {};
-  S.mHist.setData(klines.reduce((out, k, i) => {
-    const h = (macd.histogram || [])[i];
-    if (h) out.push({ time:t(k), value:h, color: h >= 0 ? 'rgba(34,197,94,.85)' : 'rgba(239,68,68,.85)' });
-    return out;
-  }, []));
-  S.mLine.setData(ld(klines, macd.macd_line));
-  S.mSig.setData(ld(klines, macd.signal_line));
+  series.mLine.setData(mapAllToChart(macd.macd_line || [], klines));
+  series.mSig.setData(mapAllToChart(macd.signal_line || [], klines));
+  var histData = [];
+  for (var i = 0; i < klines.length; i++) {
+    var v = (macd.histogram || [])[i];
+    if (v === null || v === undefined) continue;
+    histData.push({ time: t(klines[i]), value: v, color: v >= 0 ? '#22c55e88' : '#ef444488' });
+  }
+  series.mHist.setData(histData);
 
-  const rsiData = ld(klines, ind.rsi);
-  S.rsi.setData(rsiData);
+  // RSI — all 200 points for alignment
+  const rsiData = mapAllToChart(ind.rsi, klines);
+  series.rsi.setData(rsiData);
   if (!APP.rsiLines && rsiData.length) {
     const D = LC.LineStyle.Dashed;
-    S.rsi.createPriceLine({ price:70, color:'rgba(239,68,68,.5)',  lineWidth:1, lineStyle:D, axisLabelVisible:true,  title:'70' });
-    S.rsi.createPriceLine({ price:30, color:'rgba(34,197,94,.5)',  lineWidth:1, lineStyle:D, axisLabelVisible:true,  title:'30' });
-    S.rsi.createPriceLine({ price:50, color:'rgba(71,85,105,.4)',  lineWidth:1, lineStyle:LC.LineStyle.Dotted, axisLabelVisible:false });
+    series.rsi.createPriceLine({ price:70, color:'rgba(239,68,68,.5)',  lineWidth:1, lineStyle:D, axisLabelVisible:true,  title:'70' });
+    series.rsi.createPriceLine({ price:30, color:'rgba(34,197,94,.5)',  lineWidth:1, lineStyle:D, axisLabelVisible:true,  title:'30' });
+    series.rsi.createPriceLine({ price:50, color:'rgba(71,85,105,.4)',  lineWidth:1, lineStyle:LC.LineStyle.Dotted, axisLabelVisible:false });
     APP.rsiLines = true;
   }
 
-  S.kK.setData(ldo(klines, ind.kdj, 'k'));
-  S.kD.setData(ldo(klines, ind.kdj, 'd'));
-  S.kJ.setData(ldo(klines, ind.kdj, 'j'));
+  // KDJ — mapAllToChart: initial value 50 is valid, must not be skipped
+  series.kK.setData(mapAllToChart(ind.kdj, klines, 'k'));
+  series.kD.setData(mapAllToChart(ind.kdj, klines, 'd'));
+  series.kJ.setData(mapAllToChart(ind.kdj, klines, 'j'));
 
-  if (fit) Object.values(APP.C).forEach(c => c.timeScale().fitContent());
+  if (fit) Object.values(charts).forEach(c => c.timeScale().fitContent());
 }
 
 function updatePanel(klines, ind) {
@@ -504,12 +554,26 @@ function sched() {
   APP.timer = setTimeout(() => load(false).then(sched), 30000);
 }
 
-$('sym-grp').addEventListener('click', e => {
+$('sym-rows').addEventListener('click', e => {
   const btn = e.target.closest('[data-s]');
   if (!btn) return;
-  $('sym-grp').querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  $('sym-rows').querySelectorAll('[data-s]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  $('custom-sym').value = '';
   APP.sym = btn.dataset.s;
+  clearTimeout(APP.timer);
+  load(true).then(sched);
+});
+
+$('custom-sym').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  let val = e.target.value.trim().toUpperCase();
+  if (!val) return;
+  if (val.endsWith('USDT')) val = val.slice(0, -4);
+  if (!val) return;
+  $('sym-rows').querySelectorAll('[data-s]').forEach(b => b.classList.remove('active'));
+  APP.sym = val;
+  e.target.blur();
   clearTimeout(APP.timer);
   load(true).then(sched);
 });

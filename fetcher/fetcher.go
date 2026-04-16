@@ -14,7 +14,7 @@ func FetchKlines(symbol, interval string, limit int) ([]model.Kline, error) {
 		limit = 200
 	}
 	url := fmt.Sprintf(
-		"https://api.binance.com/api/v3/klines?symbol=%s&interval=%s&limit=%d",
+		"https://data-api.binance.vision/api/v3/klines?symbol=%s&interval=%s&limit=%d",
 		symbol, interval, limit,
 	)
 

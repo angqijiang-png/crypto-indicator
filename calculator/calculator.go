@@ -445,17 +445,26 @@ func CalcSignalScore(
 	if inBounds(len(kdj)) {
 		cur := kdj[idx]
 		switch {
-		case cur.J <= 20 && cur.K <= 30:
-			kdjScore = 0.8
-		case cur.J >= 80 && cur.K >= 70:
-			kdjScore = -0.8
+		case cur.K <= 20 || cur.J <= 0:
+			kdjScore = 0.8 // oversold
+		case cur.K >= 80 || cur.J >= 100:
+			kdjScore = -0.8 // overbought
+		case cur.K <= 30:
+			kdjScore = 0.4 // leaning low
+		case cur.K >= 70:
+			kdjScore = -0.4 // leaning high
 		default:
 			if hasPrev(len(kdj)) {
 				prev := kdj[idx-1]
-				if cur.K > cur.D && prev.K <= prev.D {
+				switch {
+				case cur.K > cur.D && prev.K <= prev.D:
 					kdjScore = 0.6 // K crossed above D
-				} else if cur.K < cur.D && prev.K >= prev.D {
+				case cur.K < cur.D && prev.K >= prev.D:
 					kdjScore = -0.6 // K crossed below D
+				case cur.K > cur.D:
+					kdjScore = 0.2 // K above D
+				case cur.K < cur.D:
+					kdjScore = -0.2 // K below D
 				}
 			}
 		}
@@ -464,13 +473,29 @@ func CalcSignalScore(
 
 	// ── Volume (weight 10%) ──────────────────────────────────────────────────
 	volScore := 0.0
-	if inBounds(len(volData)) && inBounds(len(closes)) &&
-		volData[idx].VolRatio > 1.5 && hasPrev(len(closes)) {
+	if inBounds(len(volData)) && inBounds(len(closes)) && volData[idx].VolRatio > 0 {
+		ratio := volData[idx].VolRatio
+		priceUp := hasPrev(len(closes)) && closes[idx] > closes[idx-1]
+		priceDown := hasPrev(len(closes)) && closes[idx] < closes[idx-1]
 		switch {
-		case closes[idx] > closes[idx-1]:
-			volScore = 0.8
-		case closes[idx] < closes[idx-1]:
-			volScore = -0.8
+		case ratio > 2.0 && priceUp:
+			volScore = 1.0 // surge up
+		case ratio > 1.5 && priceUp:
+			volScore = 0.8 // strong up
+		case ratio > 1.2 && priceUp:
+			volScore = 0.4 // moderate up
+		case ratio > 2.0 && priceDown:
+			volScore = -1.0 // surge down
+		case ratio > 1.5 && priceDown:
+			volScore = -0.8 // strong down
+		case ratio > 1.2 && priceDown:
+			volScore = -0.4 // moderate down
+		case ratio < 0.5:
+			volScore = 0 // extreme low volume, no signal
+		case ratio < 0.8 && priceUp:
+			volScore = -0.2 // shrinking up, weakening
+		case ratio < 0.8 && priceDown:
+			volScore = 0.2 // shrinking down, weakening
 		}
 	}
 	breakdown["volume"] = round2(volScore)

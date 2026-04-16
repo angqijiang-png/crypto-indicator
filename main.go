@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"crypto-indicator/cache"
@@ -43,14 +45,21 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 
 	symbol := r.URL.Query().Get("symbol")
 	interval := r.URL.Query().Get("interval")
+	limitStr := r.URL.Query().Get("limit")
 	if symbol == "" {
 		symbol = "BTCUSDT"
 	}
 	if interval == "" {
 		interval = "1d"
 	}
+	limit := 200
+	if limitStr != "" {
+		if n, err := strconv.Atoi(limitStr); err == nil && n > 0 {
+			limit = n
+		}
+	}
 
-	cacheKey := symbol + ":" + interval
+	cacheKey := fmt.Sprintf("%s:%s:%d", symbol, interval, limit)
 
 	// Cache hit — return immediately
 	if cached, ok := dataCache.Get(cacheKey); ok {
@@ -58,7 +67,7 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	klines, err := fetcher.FetchKlines(symbol, interval, 100)
+	klines, err := fetcher.FetchKlines(symbol, interval, limit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -94,6 +103,18 @@ func indicatorHandler(w http.ResponseWriter, r *http.Request) {
 			volData,
 			len(closes)-1,
 		)
+	}
+
+	// 验证所有数组长度一致
+	klinesN := len(klines)
+	if len(ma5) != klinesN || len(ma20) != klinesN || len(rsi) != klinesN {
+		log.Printf("LENGTH MISMATCH: klines=%d ma5=%d ma20=%d rsi=%d", klinesN, len(ma5), len(ma20), len(rsi))
+	}
+	if len(macdResult.DIF) != klinesN || len(macdResult.DEA) != klinesN || len(macdResult.MACD) != klinesN {
+		log.Printf("MACD LENGTH MISMATCH: klines=%d macd=%d signal=%d hist=%d", klinesN, len(macdResult.DIF), len(macdResult.DEA), len(macdResult.MACD))
+	}
+	if len(bollinger) != klinesN || len(atr) != klinesN || len(kdj) != klinesN || len(volData) != klinesN {
+		log.Printf("OTHER LENGTH MISMATCH: klines=%d bb=%d atr=%d kdj=%d vol=%d", klinesN, len(bollinger), len(atr), len(kdj), len(volData))
 	}
 
 	result := map[string]interface{}{
